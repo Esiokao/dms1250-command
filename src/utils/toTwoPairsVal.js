@@ -258,11 +258,13 @@ var arr = new Array(
 )
 
 function toTwoPairsVal(mA) {
-  return findApproximate(mA, arr)
+  return findApproximateVal(mA, arr)
 }
 
-function findApproximate(val, arr) {
+// Time Complexity: O(n) 
+// implement with BS would be O(logN)
+function findApproximateVal(val, arr) {
   for (var i = 0; i < arr.length; i += 1) {
-    if (arr[i + 1] >= val) return i.toString(16)
+    if (arr[i + 1] >= val) return i.toString(16) // return hex string
   }
 }

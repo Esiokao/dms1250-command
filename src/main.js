@@ -34,25 +34,28 @@ function main() {
   // syntax: setupPorts(class: int)(watts: int|float)(port: int)
   // for multi ports setup usage 同時設定多ports
   // syntax: setupPorts(class: int)(watts: int)(portStart: int|float, portEnd: int)
-  setupPorts(4)(20)(1, 3)
+  setupPorts(4)(13)(1)
+  setupPorts(0)(14)(2)
+  setupPorts(3)(15)(3)
   disableSinglePort(4)
+  setupPorts(4)(20)(4)
   
 
   // for disable single port usage 單獨關閉某port
   // syntax: disableSinglePort(port: int)
-  // disableSinglePort(2)
 
-  // for disable slot usage 單獨關閉Slot
+
+  // for disable slot usage 單獨關閉slot
   // syntax: disableSlot(port: int)
-  // disableSlot(3)
 
-   // for enable single port usage 開啟單一port
+
+  // for enable single port usage 開啟單一port
   // syntax: enableSinglePort(port: int)
-  // enableSinglePort(2)
 
-  // for enable slot usage 開啟Slot
+
+  // for enable slot usage 開啟slot
   // syntax: enableSlot(port: int)
-  // enableSlot(4)
+
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
