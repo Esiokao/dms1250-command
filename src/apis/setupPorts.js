@@ -9,8 +9,8 @@ function setupPorts(cl) {
     return function portsReceiver(portNum, portEnd) {
       if(portEnd == undefined) portEnd = portNum
       for (portNum; portNum <= portEnd; portNum += 1) {
-        disableSinglePort(portNum)
         disable4Pairs(portNum)
+        disableSinglePort(portNum)
         setClass(cl, portNum)
         setWatts(watts, portNum)
         enablePortSlot(portNum)

@@ -30,27 +30,27 @@ eval(Include('apis/presetConfigs.js')) // perform preset Func immediately
 
 // entry point
 function main() {
-  // for single port setup 單獨設定某port
-  // syntax: setupPorts(class: int)(watts: int)(port: int)
-  // for multi ports setup
-  // syntax: setupPorts(class: int)(watts: int)(portStart: int, portEnd: int)
-  setupPorts(4)(20)(1, 3)
-  disableSinglePort(4)
+  // for single port setup usage 單獨設定某port
+  // syntax: setupPorts(class: int)(watts: int|float)(port: int)
+  // for multi ports setup usage 同時設定多ports
+  // syntax: setupPorts(class: int)(watts: int)(portStart: int|float, portEnd: int)
+  setupPorts(3)(20)(1, 24)
+  // disableSinglePort(4)
   
 
-  // for disable single port 單獨關閉某port
+  // for disable single port usage 單獨關閉某port
   // syntax: disableSinglePort(port: int)
   // disableSinglePort(2)
 
-  // for disable slot 單獨關閉Slot
+  // for disable slot usage 單獨關閉Slot
   // syntax: disableSlot(port: int)
-  disableSlot(3)
+  // disableSlot(3)
 
-   // for enable single port 開啟單一port
+   // for enable single port usage 開啟單一port
   // syntax: enableSinglePort(port: int)
   // enableSinglePort(2)
 
-  // for enable slot 開啟Slot
+  // for enable slot usage 開啟Slot
   // syntax: enableSlot(port: int)
   // enableSlot(4)
 }
