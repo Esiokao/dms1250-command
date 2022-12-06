@@ -12,12 +12,13 @@ eval(Include('apis/setVoltage.js'))
 eval(Include('apis/setClass.js'))
 eval(Include('apis/setWatts.js'))
 eval(Include('apis/setupPorts.js'))
+// perform preset Func immediately
+eval(Include('apis/presetConfigs.js'))
 
 
 
 // entry point
 function main() {
-  send('\n')
   setupPorts(3)(14)(9, 12)
   // setVoltage()
 }
