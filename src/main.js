@@ -18,8 +18,7 @@ eval(Include('apis/setupPorts.js'))
 // entry point
 function main() {
   send('\n')
-  // disable4Pairs(13)
-  setupPorts(4)(13)(1, 24)
+  setupPorts(3)(14)(9, 12)
   // setVoltage()
 }
 

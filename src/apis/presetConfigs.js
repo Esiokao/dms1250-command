@@ -3,7 +3,8 @@ eval(Include('apis/setVoltage.js'))
 
 
 function presetConfigs() {
-  setVoltage(54)
+  setVoltage(53)
+  send('\n')
 }
 
 
