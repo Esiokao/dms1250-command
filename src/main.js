@@ -12,6 +12,8 @@ eval(Include('apis/setVoltage.js'))
 eval(Include('apis/setClass.js'))
 eval(Include('apis/setWatts.js'))
 eval(Include('apis/setupPorts.js'))
+eval(Include('apis/disableSlot.js'))
+eval(Include('apis/enableSlot.js'))
 // perform preset Func immediately
 eval(Include('apis/presetConfigs.js'))
 
@@ -32,6 +34,7 @@ function main() {
   setupPorts(3)(14)(1, 2)
   // for disable single port
   // disableSinglePort(port: int)
+  disableSlot(8)
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
