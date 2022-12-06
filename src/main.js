@@ -23,7 +23,7 @@ eval(Include('apis/presetConfigs.js')) // perform preset Func immediately
  * F: V * I = W, 2pairs offset = 20mA
  * scenario1: we'd like to acquire 15 watts from PSE Switch w/ class 3 to ports 1 to 4.
  * syntax: setupPorts(3)(15)(1, 4);
- * function will do the calculations to get the most approximate value and commands by following the formula via apis under the hood.
+ * function will do the calculations to get the most approximate value and write commands by following the formula via apis under the hood.
  * p.s. Voltage is defined as 54V as default PSE outputVoltage.
  * p.s.2 我還沒寫防呆跟boundary condition, 請原諒我ㄉ懶惰(つ´ω`)つ.
  */
@@ -42,19 +42,19 @@ function main() {
   disableSinglePort(1)
   
 
-  // for disable single port usage 單獨關閉某port
+  // for disable single port usage, 單獨關閉某port
   // syntax: disableSinglePort(port: int)
 
 
-  // for disable slot usage 單獨關閉slot
+  // for disable slot usage, 單獨關閉slot
   // syntax: disableSlot(port: int)
 
 
-  // for enable single port usage 開啟單一port
+  // for enable single port usage, 開啟單一port
   // syntax: enableSinglePort(port: int)
 
 
-  // for enable slot usage 開啟slot
+  // for enable slot usage, 開啟slot
   // syntax: enableSlot(port: int)
 
 }
