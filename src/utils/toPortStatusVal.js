@@ -2,12 +2,12 @@ eval(Include('apis/send.js'))
 
 var portStatusVal = {
   enable: {
-    0: '0x2',
-    1: '0x1'
-  },
-  disable: {
     0: '0x1',
     1: '0x2'
+  },
+  disable: {
+    0: '0x2',
+    1: '0x1'
   }
 }
 

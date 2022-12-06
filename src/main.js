@@ -16,11 +16,22 @@ eval(Include('apis/setupPorts.js'))
 eval(Include('apis/presetConfigs.js'))
 
 
+// V * I = W, 2pairs offset = 20mA
+// scenario1: we'd like to acquire 15 watts from PSE Switch w/ class 3 to ports 1 to 4.
+// syntax: setupPorts(3)(15)(1, 4);
+// the apis will do the calculations to get the most approximate value by following the formula via apis.
+// p.s. Voltage is defined as 54V as default PSEoutputVoltage.
+// p.s.2 我還沒寫防呆跟boundary condition, 我真ㄉ好懶.
 
-// entry point
 function main() {
-  setupPorts(3)(14)(9, 12)
-  // setVoltage()
+  // entry point
+  // for single port setup
+  // setupPorts(class: int)(watts: int)(port: int)
+  // for multi ports setup
+  // setupPorts(class: int)(watts: int)(portStart: int, portEnd: int)
+  setupPorts(3)(14)(1, 2)
+  // for disable single port
+  // disableSinglePort(port: int)
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
