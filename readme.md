@@ -5,3 +5,4 @@
 - auto guard band feature.
 - more flexible patterns.
 - bt mode support.
+- GUI or Interactive

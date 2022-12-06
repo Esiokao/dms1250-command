@@ -3,16 +3,18 @@ eval(Include('apis/sleep.js'))
 eval(Include('apis/setClass.js'))
 eval(Include('utils/index.js'))
 
+var cache = {}
+
 function setWatts(watts, portNum) {
-  var cache = {}
   var mA = utils.wattsToTwoPairsAmpere(watts)
-  var val
+  var val = '0x0'
 
   if (cache[watts] == undefined) {
-    val = '0x' + utils.toTwoPairsVal(mA)
-    cache[watts] = val
+    var pairsVal = utils.toTwoPairsVal(mA)
+    val = '0x' + pairsVal
+    cache[watts] = val 
   } else {
-    val = '0x' + cache[watts]
+    val =  cache[watts]
   }
 
   send(

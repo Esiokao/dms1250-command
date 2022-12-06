@@ -34,10 +34,11 @@ function main() {
   // syntax: setupPorts(class: int)(watts: int|float)(port: int)
   // for multi ports setup usage 同時設定多ports
   // syntax: setupPorts(class: int)(watts: int)(portStart: int|float, portEnd: int)
-  // setupPorts(4)(20)(2)
-  // setupPorts(4)(20)(3)
-  // setupPorts(4)(20)(4)
-  // setupPorts(4)(20)(1)
+  setupPorts(4)(20)(2)
+  setupPorts(4)(20)(3)
+  setupPorts(4)(20)(4)
+  setupPorts(4)(21)(1)
+  setupPorts(3)(19)(5)
   disableSinglePort(1)
   
 
