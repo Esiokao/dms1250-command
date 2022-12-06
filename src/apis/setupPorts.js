@@ -14,6 +14,8 @@ function setupPorts(cl) {
         disableSinglePort(portNum)
         setClass(cl, portNum)
         setWatts(watts, portNum)
+        // to avoid situation that when setting ports from 1 to 5, but get activated on port 6.
+        // cuz there's no status ctrl reg for just one single port. kinda weird but truth =_=...
         portNum % 2 == 0 ? enableSinglePort(portNum) : enablePortSlot(portNum)
       }
     }
