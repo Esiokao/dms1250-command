@@ -12,10 +12,9 @@ var portStatusReg = {
  * @returns {string} portReg
  */
 function toPortStatusReg(portNum) {
-  // in order to provide more memorable UX, allow params start from 1
+  // in order to provide more straightforward UX, allow params number start from 1.
   // 1 + 1 % 2 = 0
   // 2 + 1 % 2 = 1
   portNum = (portNum + 1) % 2
   return portStatusReg[portNum]
 }
-

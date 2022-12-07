@@ -14,15 +14,14 @@ var slotReg = {
 }
 
 /**
- * transform portNum to slot register number
+ * take portNum as input and return slot register number
  * @param {number} portNum
- * @returns {number} slotReg
  * @example toSlotReg(10) // returns 0x34
  *          toSlotReg(13) // returns 0x36
  * @returns {string} slotReg
  */
 function toSlotReg(portNum) {
-  // in order to provide more memorable UX, allow param to start from 1
+  // in order to provide more straightforward UX, allow params number start from 1.
   portNum -= 1
   var slotNum = Math.floor(portNum / 2)
   return slotReg[slotNum]
