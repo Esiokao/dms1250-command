@@ -8,11 +8,10 @@ eval(Include('apis/enablePortSlot.js'))
 function setupPorts(cl) {
   return function wattsReceiver(watts) {
     return function portsReceiver(portNum, portEnd) {
-      var multi = portEnd ? false : true
+      var multi = portEnd ? true : false
       if (portEnd == undefined) portEnd = portNum
       // TODO: refactor
       // TODO: multi ? odd ? single : slot : slot
-      // TODO: single self
       for (portNum; portNum <= portEnd; portNum++) {
         var next = portNum < portEnd
         disable4Pairs(portNum)
