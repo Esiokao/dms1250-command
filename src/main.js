@@ -25,17 +25,19 @@ eval(Include('apis/presetConfigs.js'))
  * syntax: setupPorts(3)(15)(1, 5);
  * the function will do the calculations to get the most approximated value by following the formula and write commands via calling apis under the hood.
  * p.s. Voltage is defined as 54V as default PSE output voltage value.
- * p.s.2 我還沒寫防呆跟boundary condition, 我就懶!
+ * p.s.2 我還沒寫防呆跟boundary condition ><.
  *
  */
 
 // entry point
 function main() {
-  // for single port setup usage 單獨設定某port
+  // for single port setup usage, 單獨設定某port
   // syntax: setupPorts(class: int)(watts: int|float)(port: int)
-  // for multi ports setup usage 同時設定多ports
+  // for multi ports setup usage, 同時設定多ports
   // syntax: setupPorts(class: int)(watts: int)(portStart: int|float, portEnd: int)
-  setupPorts(0)(14.5)(1, 3)
+  setupPorts(4)(20)(1, 4)
+ 
+  
  
 
   // for disable single port usage, 單獨關閉某port
@@ -43,8 +45,11 @@ function main() {
 
   // for disable slot usage, 單獨關閉slot
   // syntax: disableSlot(port: int)
-  // for enable slot usage, 開啟slot
+  // disableSlot(1)
+
+  // for enable slot usage, 單獨開啟slot
   // syntax: enableSlot(port: int)
+  // enableSlot(1)
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.

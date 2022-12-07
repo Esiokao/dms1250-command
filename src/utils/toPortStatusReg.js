@@ -5,6 +5,7 @@ var portStatusReg = {
 
 /**
  * transform portNum to port status register number
+ * @deprecated
  * @param {number} portNum
  * @returns {number} portReg
  * @example toPortStatusReg(10) // returns 0x61
