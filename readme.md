@@ -1,8 +1,8 @@
 # README
 
-## RoadMap 
+## RoadMap
 
 - auto guard band feature.
 - more flexible patterns.
 - bt mode support.
-- GUI or Interactive
+- GUI(electron) or Interactive UI(Node with inquiry api).
