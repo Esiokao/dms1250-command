@@ -8,6 +8,10 @@ var volt = 54
 var pairs = 2
 
 // F: V * I = W.
+/**
+ * transform watts to two pairs ampere value
+ * @param {number} watts 
+ */
 function wattsToTwoPairsAmpere(watts) {
   // divide by two for 2 pairs, divide by  1000 for mA to A.
   return ((watts * 1000) / volt - offset) / 1000 / pairs

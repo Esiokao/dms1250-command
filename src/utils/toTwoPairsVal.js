@@ -263,6 +263,11 @@ function toTwoPairsVal(mA) {
 
 // Time Complexity: O(n) 
 // implement with BS would be O(logN)
+/**
+ * return the most approximated value by ampere value
+ * @param {number|float} val 
+ * @param {int[]} arr 
+ */
 function findApproximateVal(val, arr) {
   for (var i = 0; i < arr.length; i += 1) {
     if (arr[i + 1] >= val) return i.toString(16) // return hex string

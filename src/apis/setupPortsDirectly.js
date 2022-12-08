@@ -5,27 +5,21 @@ eval(Include('apis/disableSinglePort.js'))
 eval(Include('apis/enableSinglePort.js'))
 eval(Include('apis/enablePortSlot.js'))
 
-function setupPorts(cl) {
+function setupPortsDirectly(cl) {
   return function wattsReceiver(watts) {
     return function portsReceiver(portNum, portEnd) {
       var multi = portEnd ? true : false
-      if (portEnd == undefined) portEnd = portNum
-      // TODO: refactor
-      // TODO: multi ? odd ? single : slot : slot
-      for (portNum; portNum <= portEnd; portNum++) {
-        var next = portNum < portEnd
-        disable4Pairs(portNum)
-        disableSinglePort(portNum)
+      portEnd = portEnd == undefined ? portNum : portEnd
+      // NOTE: setup w/o disable/enable
+      while (portNum <= portEnd) {
+        
         setClass(cl)(portNum)
         setWatts(watts)(portNum)
+        enablePortSlot(portNum)
         // to avoid situation that when setting ports from 1 to 5, but get activated on port 6,
         // need to do additional check.
         // cuz there's no status ctrl register for just one single port. kinda weird but truth =_=...
-        multi
-          ? portNum % 2
-            ? enableSinglePort(portNum)
-            : enablePortSlot(portNum)
-          : enablePortSlot(portNum)
+        portNum += 1
       }
     }
   }

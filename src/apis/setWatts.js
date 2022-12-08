@@ -5,30 +5,32 @@ eval(Include('utils/index.js'))
 
 var cache = {}
 
-function setWatts(watts, portNum) {
-  var mA = utils.wattsToTwoPairsAmpere(watts)
-  var val = '0x0'
+function setWatts(watts) {
+  return function portNumReceiver(portNum) {
+    var mA = utils.wattsToTwoPairsAmpere(watts)
+    var val = '0x0' // default value
 
-  if (cache[watts] == undefined) {
-    var pairsVal = utils.toTwoPairsVal(mA)
-    val = '0x' + pairsVal
-    cache[watts] = val
-  } else {
-    val = cache[watts]
+    if (cache[watts] == undefined) {
+      var pairsVal = utils.toTwoPairsVal(mA)
+      val = '0x' + pairsVal
+      cache[watts] = val
+    } else {
+      val = cache[watts]
+    }
+
+    send(
+      'PoEI2CWrite' +
+        ' ' +
+        utils.toSlotReg(portNum) +
+        ' ' +
+        utils.toPortWattsReg(portNum) +
+        ' ' +
+        val +
+        '\n'
+    )
+
+    return watts // return watts value
   }
-
-  send(
-    'PoEI2CWrite' +
-      ' ' +
-      utils.toSlotReg(portNum) +
-      ' ' +
-      utils.toPortWattsReg(portNum) +
-      ' ' +
-      val +
-      '\n'
-  )
-
-  return watts // return watts value
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
