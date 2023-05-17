@@ -6,6 +6,7 @@
  * @version 0.0.1
 */
 
+
 // dynamic import api modules
 eval(Include('apis/send.js'))
 eval(Include('utils/decToHex.js'))
@@ -21,7 +22,7 @@ var configs = {
   ipv6: {
     name: 'EXIPV61'
   },
-  ip : {
+  ip: {
     name: 'EXIP1'
   }
 }
@@ -70,43 +71,81 @@ function exit() {
 }
 
 function interface(int) {
-  var commnad = 'interface' + ' ' + 'ethernet' + ' ' + '1/0/' +  String(int) + '\n'
+  var commnad = 'interface' + ' ' + 'ethernet' + ' ' + '1/0/' + String(int) + '\n'
   send(commnad)
 }
 
 function port_security(macAddr, vlan) {
-  var command = 'switchport' + ' ' + 'port-security' + ' ' + 'mac-address' + ' ' +  macAddr + ' ' + 'vlan' + ' ' + vlan + '\n'
+  var command = 'switchport' + ' ' + 'port-security' + ' ' + 'mac-address' + ' ' + macAddr + ' ' + 'vlan' + ' ' + vlan + '\n'
   send(command)
 }
 
+// function port_security_pipe() {
+//   for (var i = 1; i <= 10; i += 1) {
+//     interface(i)
+
+//     var five = 0
+//     var six = 0
+//     var seven = 0
+//     var eight = 0
+
+//     for (var j = 1; j <= 33; j += 1) {
+//       eight = decToHex(j % 16)
+//       seven = decToHex(Math.floor(j / 16))
+//       six = decToHex(Math.floor(j / (16 * 8)))
+//       five = decToHex(Math.floor(j / (16 * 8 * 8)))
+
+//       var macAddr = '00-00-00-00' + '-' + five + six + '-' + seven + eight
+
+//       port_security(macAddr, i)
+//     }
+
+//     exit()
+//   }
+// }
+
+function radius_server(ip) {
+  var command = 'radius-server host ' + ip + ' key 0 ' + Math.ceil(Math.random() * 1000000) + '\n'
+  send(command)
+}
+
+
+function v4_loop_generator(num, step, fn) {
+  var ipv4
+  var first = 192
+  var second = 168
+  var third = 0
+  var fourth = 0
+  for (var i = 1; i <= num; i += step) {
+    third = Math.ceil(i / 255)
+    fourth = i % 255
+    ipv4 = String(first) + '.' + String(second) + '.' + String(third) + '.' + String(fourth)
+
+    fn(ipv4)
+  }
+}
+
+function v6_loop_generator(num, step, fn) {
+  var ipv6
+  for (var i = 1; i <= num; i += step) {
+    var first = 8192
+    var rear = 1
+    rear = decToHex(i % 16)
+    first = decToHex(first + Math.floor(i / 16))
+    ipv6 = String(first) + '::' + String(rear)
+
+    fn(ipv6)
+  }
+}
 
 // entry point
 function main() {
   // send('conf t \n')
 
-  for(var i = 1; i <= 10; i += 1) {
-    interface(i)
+  v6_loop_generator(10*16, 16, radius_server)
+  v4_loop_generator(10, 1, radius_server)
 
-    var five = 0
-    var six = 0
-    var seven = 0
-    var eight = 0
 
-    for(var j = 1; j <= 33; j +=1 ) {
-      eight = decToHex(j % 16)
-      seven = decToHex(Math.floor(j / 16))
-      six = decToHex(Math.floor(j / (16*8)))
-      five = decToHex(Math.floor(j / (16*8*8)))
-
-      var macAddr = '00-00-00-00' + '-' + five + six  + '-' + seven + eight
-
-      port_security(macAddr, i)
-    }
-
-    exit()
-  }
-
-  // 123456789
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
