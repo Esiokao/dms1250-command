@@ -4,56 +4,109 @@
  * @description utility scripts to setup poe-poh
  * @license MIT
  * @version 0.0.1
- */
+*/
 
 // dynamic import api modules
-eval(Include('apis/reset.js'))
-eval(Include('apis/setVoltage.js'))
-eval(Include('apis/setClass.js'))
-eval(Include('apis/setWatts.js'))
-// status control api modules
-eval(Include('apis/disableSinglePort.js'))
-eval(Include('apis/setupPorts.js'))
-eval(Include('apis/setupPortsDirectly.js'))
-eval(Include('apis/disableSlot.js'))
-eval(Include('apis/enableSlot.js'))
-// perform preset Func immediately
-eval(Include('apis/presetConfigs.js'))
+eval(Include('apis/send.js'))
+eval(Include('utils/decToHex.js'))
+//-----------------------------------------------
 
-/**
- * F: V * I = W, 2pairs offset = 20mA
- * scenario: we'd like to acquire 15 watts from PSE Switch w/ class 3 to ports from 1 to 5.
- * usage: setupPorts(3)(15)(1, 5);
- * the function will do the calculations to get the most approximated value by following the formula and write commands via calling apis under the hood.
- * p.s. Voltage is defined as 54V as default PSE output voltage value.
- * p.s.2 我還沒寫防呆跟boundary condition ><.
- *
- */
+var endl = '\n'
+
+var configs = {
+  mac: {
+    name: 'EXMAC1',
+    id: '6000'
+  },
+  ipv6: {
+    name: 'EXIPV61'
+  },
+  ip : {
+    name: 'EXIP1'
+  }
+}
+
+
+
+function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
+  // rule 108 permit any any ethernet-type 70A 70A
+  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + macSrc + ' ' + macDest + ' ' + 'ethernet-type' + ' ' + ethType + ' ' + ethMask + '\n'
+  send(command)
+}
+
+function mac_access_list_extended(name, number) {
+  // mac access-list extended NAME [NUMBER]
+  var command = 'mac access-list extended' + ' ' + name + ' ' + number + '\n'
+  send(command)
+}
+
+function ipv6_access_list_extended(name) {
+  // ipv6 access-list [extended] NAME 
+  var command = 'ipv6 access-list extended' + ' ' + name + '\n'
+  send(command)
+}
+
+function acl_ipv6_config(seqNum, act, proto, srcIP, destIP) {
+  // rule 1 permit tcp any any
+  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + proto + ' ' + srcIP + ' ' + destIP + '\n'
+  send(command)
+}
+
+function ip_access_list_extended(name) {
+  // ip access-list [extended] NAME 
+  var command = 'ip access-list extended' + ' ' + name + '\n'
+  send(command)
+}
+
+function acl_ip_config(seqNum, act, proto, srcIP, destIP) {
+  // rule 1 permit tcp any any
+  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + proto + ' ' + srcIP + ' ' + destIP + '\n'
+  send(command)
+}
+
+function exit() {
+  var command = 'exit \n'
+  send(command)
+}
+
+function interface(int) {
+  var commnad = 'interface' + ' ' + 'ethernet' + ' ' + '1/0/' +  String(int) + '\n'
+  send(commnad)
+}
+
+function port_security(macAddr, vlan) {
+  var command = 'switchport' + ' ' + 'port-security' + ' ' + 'mac-address' + ' ' +  macAddr + ' ' + 'vlan' + ' ' + vlan + '\n'
+  send(command)
+}
+
 
 // entry point
 function main() {
-  // for single port setup usage, 單獨設定某port
-  // usage: setupPorts(class: int)(watts: int|float)(port: int)
-  // for multi ports setup usage, 同時設定多ports
-  // usage: setupPorts(class: int)(watts: int|float)(portStart: int, portEnd: int)
-  setupPorts(4)(20)(1, 4)
- 
-  // for disable single port usage, 單獨關閉某port
-  // usage: disableSinglePort(port: int)
+  // send('conf t \n')
 
-  // for disable slot usage, 單獨關閉slot
-  // usage: disableSlot(port: int)
-  // disableSlot(1)
+  for(var i = 1; i <= 10; i += 1) {
+    interface(i)
 
-  // for enable slot usage, 單獨開啟slot
-  // usage: enableSlot(port: int)
-  // enableSlot(1)
+    var five = 0
+    var six = 0
+    var seven = 0
+    var eight = 0
 
-  // for single port setup usage, 不斷電單獨設定某port
-  // usage: setupPortsDirectly(class: int)(watts: int|float)(port: int)
-  // for multi ports setup usage, 不斷電同時設定多ports
-  // usage: setupPortsDirectly(class: int)(watts: int|float)(portStart: int|float, portEnd: int)
-  
+    for(var j = 1; j <= 33; j +=1 ) {
+      eight = decToHex(j % 16)
+      seven = decToHex(Math.floor(j / 16))
+      six = decToHex(Math.floor(j / (16*8)))
+      five = decToHex(Math.floor(j / (16*8*8)))
+
+      var macAddr = '00-00-00-00' + '-' + five + six  + '-' + seven + eight
+
+      port_security(macAddr, i)
+    }
+
+    exit()
+  }
+
+  // 123456
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.

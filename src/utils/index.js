@@ -5,6 +5,8 @@ eval(Include('utils/toPortWattsReg.js'))
 eval(Include('utils/wattsToTwoPairsAmpere.js'))
 eval(Include('utils/toTwoPairsVal.js'))
 eval(Include('utils/toPortStatusVal.js'))
+eval(Include('utils/decToHex.js'))
+
 
 var utils = {
   toSlotReg: toSlotReg,
@@ -12,7 +14,8 @@ var utils = {
   toPortWattsReg: toPortWattsReg,
   wattsToTwoPairsAmpere: wattsToTwoPairsAmpere,
   toTwoPairsVal: toTwoPairsVal,
-  toPortStatusVal: toPortStatusVal
+  toPortStatusVal: toPortStatusVal,
+  decToHex: decToHex
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
