@@ -10,6 +10,7 @@
 // dynamic import api modules
 eval(Include('apis/send.js'))
 eval(Include('utils/decToHex.js'))
+eval(Include('utils/randChar.js'))
 //-----------------------------------------------
 
 var endl = '\n'
@@ -115,14 +116,14 @@ function tacacs_server(ip) {
 }
 
 
-function v4_loop_generator(num, step, fn) {
+function v4_loop_generator(num, base, step, fn) {
   var ipv4
   var first = 192
   var second = 168
   var third = 0
   var fourth = 0
-  for (var i = 1; i <= num; i += step) {
-    third = Math.ceil(i / 255)
+  for (var i = base; i < base + num * step; i += step) {
+    third = Math.floor(i / 255)
     fourth = i % 255
     ipv4 = String(first) + '.' + String(second) + '.' + String(third) + '.' + String(fourth)
 
@@ -130,28 +131,44 @@ function v4_loop_generator(num, step, fn) {
   }
 }
 
-function v6_loop_generator(num, step, fn) {
+function v6_loop_generator(num, base, step, fn) {
   var ipv6
-  for (var i = 1; i <= num; i += step) {
+  for (var i = base; i < base + num * step; i += step) {
     var first = 8192
     var rear = 1
-    rear = decToHex(i % 16)
-    first = decToHex(first + Math.floor(i / 16))
+    first = decToHex(first + i)
     ipv6 = String(first) + '::' + String(rear)
 
     fn(ipv6)
   }
 }
 
+function random_loop_generator(generator1, generator2) {
+  return function (num, step, fn1, fn2) {
+    for (var i = 0; i < num; i += step) {
+      Math.round(Math.random()) ? generator1(1, i, step, fn1) : generator2(1, i, step, fn2)
+    }
+  }
+}
+
+function authentication(charLength, vlanID) {
+  var command =  'authentication username ' +  randChar(charLength) + ' password 0 ' + randChar(charLength) + ' vlan ' + vlanID + '\n'
+  send(command, 2000)  
+}
+
 // entry point
 function main() {
-  // send('conf t \n')
+  send('conf t \n')
 
-  v6_loop_generator(20*16, 16, tacacs_server)
-  // v4_loop_generator(20, 1, tacacs_server)
+  // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
-
+  for(var i = 1; i <= 2; i += 1) {
+    authentication(32, i)
+  }
 }
+
+
+
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
 // NOTE: you may need to update your script engines and scripting runtime

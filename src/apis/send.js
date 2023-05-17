@@ -1,7 +1,8 @@
 eval(Include('apis/sleep.js'))
 
-function send(str) {
-  sleep(125) // defer 125ms to send another message
+function send(str, delay) {
+  delay ? delay : 125
+  sleep(delay) // defer 125ms to send another message
   crt.Screen.Send(str)
 }
 
