@@ -109,6 +109,11 @@ function radius_server(ip) {
   send(command)
 }
 
+function tacacs_server(ip) {
+  var command = 'tacacs-server host ' + ip + ' key 0 ' + Math.ceil(Math.random() * 1000000) + '\n'
+  send(command)
+}
+
 
 function v4_loop_generator(num, step, fn) {
   var ipv4
@@ -142,8 +147,8 @@ function v6_loop_generator(num, step, fn) {
 function main() {
   // send('conf t \n')
 
-  v6_loop_generator(10*16, 16, radius_server)
-  v4_loop_generator(10, 1, radius_server)
+  v6_loop_generator(20*16, 16, tacacs_server)
+  // v4_loop_generator(20, 1, tacacs_server)
 
 
 }
