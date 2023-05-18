@@ -246,6 +246,12 @@ function clear_running_config() {
   sleep(3000)
 }
 
+function web_timeout(timeout) {
+  timeout = timeout ? timeout : '36000'
+  var command = 'ip http time idle ' + timeout + '\n'
+  send(command)
+}
+
 function enable_https_server() {
   send('conf t \n')
   send('ip http sec \n')
@@ -262,7 +268,7 @@ function pipeLine(num, base, step) {
   }
 }
 
-function loop(num, base, step, callbackFunc)  {
+function loop(num, base, step, callbackFunc) {
   for (var i = base; i < base + num * step; i += step) {
     callbackFunc(i)
   }
@@ -273,6 +279,7 @@ function main() {
   clear_running_config()
   login()
   enable_https_server()
+  web_timeout()
 
   // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
@@ -290,12 +297,12 @@ function main() {
   // }
 
   // callbackFunc
- loop(5, 1, 1, function(index){
-  ip_access_list_standard('STIP' + String(index))
- })
- loop(5, 6, 1, function(index){
-  ipv6_access_list_standard('STIPV6' + String(index))
- })
+  //  loop(5, 1, 1, function(index){
+  //   ip_access_list_standard('STIP' + String(index))
+  //  })
+  //  loop(5, 6, 1, function(index){
+  //   ipv6_access_list_standard('STIPV6' + String(index))
+  //  })
 }
 
 
