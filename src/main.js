@@ -25,6 +25,10 @@ var configs = {
   },
   ip: {
     name: 'EXIP1'
+  },
+  arpList: {
+    name: 'arpList2',
+    action: 'Deny'
   }
 }
 
@@ -115,6 +119,18 @@ function tacacs_server(ip) {
   send(command)
 }
 
+function macAddr_loop_generator(num, base, step, fn) {
+  for (var i = base; i < base + num * step; i += step) {
+    eight = decToHex(i % 16)
+    seven = decToHex(Math.floor(i / 16))
+    six = decToHex(Math.floor(i / (16 * 8)))
+    five = decToHex(Math.floor(i / (16 * 8 * 8)))
+
+    var macAddr = '00-00-00-00' + '-' + five + six + '-' + seven + eight
+
+    fn(macAddr)
+  }
+}
 
 function v4_loop_generator(num, base, step, fn) {
   var ipv4
@@ -151,10 +167,31 @@ function random_loop_generator(generator1, generator2) {
   }
 }
 
-function authentication(charLength, vlanID) {
-  var command =  'authentication username ' +  randChar(charLength) + ' password 0 ' + randChar(charLength) + ' vlan ' + vlanID + '\n'
-  send(command, 2000)  
+function enter_arp_list(arpListName) {
+  // auto create if it doesnt exist
+  var command = 'arp access-list ' + arpListName + '\n'
+  send(command)
 }
+
+function edit_arp_list(act, ipType) {
+  enter_arp_list(configs.arpList.name)
+
+  return function ipv4Reciver(ipv4) {
+    var command = act + ' ip host ' + ipv4 + ' mac any' + '\n'
+    send(command)
+  }
+}
+
+function authentication(charLength, vlanID) {
+  if (vlanID) {
+    var command = 'authentication username ' + randChar(charLength) + ' password 0 ' + randChar(charLength) + ' vlan ' + vlanID + '\n'
+  }
+  else {
+    var command = 'authentication username ' + randChar(charLength) + ' password 0 ' + randChar(charLength) + '\n'
+  }
+  send(command, 2000)
+}
+
 
 // entry point
 function main() {
@@ -162,9 +199,11 @@ function main() {
 
   // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
-  for(var i = 1; i <= 2; i += 1) {
-    authentication(32, i)
-  }
+  // for(var i = 1; i <= 10; i += 1) {
+  //   authentication(10, '')
+  // }
+
+  v4_loop_generator(17, 1, 1, edit_arp_list(configs.arpList.action))
 }
 
 
