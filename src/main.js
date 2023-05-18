@@ -9,6 +9,7 @@
 
 // dynamic import api modules
 eval(Include('apis/send.js'))
+eval(Include('apis/sleep.js'))
 eval(Include('utils/decToHex.js'))
 eval(Include('utils/randChar.js'))
 //-----------------------------------------------
@@ -55,15 +56,27 @@ function ipv6_access_list_extended(name) {
   send(command)
 }
 
-function acl_ipv6_config(seqNum, act, proto, srcIP, destIP) {
-  // rule 1 permit tcp any any
-  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + proto + ' ' + srcIP + ' ' + destIP + '\n'
+function ipv6_access_list_standard(name) {
+  // ipv6 access-list NAME 
+  var command = 'ipv6 access-list ' + ' ' + name + '\n'
   send(command)
 }
 
 function ip_access_list_extended(name) {
   // ip access-list [extended] NAME 
   var command = 'ip access-list extended' + ' ' + name + '\n'
+  send(command)
+}
+
+function ip_access_list_standard(name) {
+  // ip access-list NAME 
+  var command = 'ip access-list' + ' ' + name + '\n'
+  send(command)
+}
+
+function acl_ipv6_config(seqNum, act, proto, srcIP, destIP) {
+  // rule 1 permit tcp any any
+  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + proto + ' ' + srcIP + ' ' + destIP + '\n'
   send(command)
 }
 
@@ -218,6 +231,26 @@ function login() {
   send('conf t \n')
 }
 
+function clear_running_config() {
+  send('exit\n')
+  send('exit\n')
+  send('exit\n')
+  send('exit\n')
+  send('\n')
+  send('\n')
+  send('admin\n')
+  send('admin\n')
+  send('\n')
+  send('clear running \n', 1000)
+  send('y\n')
+  sleep(3000)
+}
+
+function enable_https_server() {
+  send('conf t \n')
+  send('ip http sec \n')
+}
+
 function pipeLine(num, base, step) {
   return function () {
     for (var i = base; i < base + num * step; i += step) {
@@ -229,10 +262,17 @@ function pipeLine(num, base, step) {
   }
 }
 
+function loop(num, base, step, callbackFunc)  {
+  for (var i = base; i < base + num * step; i += step) {
+    callbackFunc(i)
+  }
+}
+
 // entry point
 function main() {
+  clear_running_config()
   login()
-
+  enable_https_server()
 
   // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
@@ -243,11 +283,19 @@ function main() {
   // v4_loop_generator(17, 1, 1, edit_arp_list(configs.arpList.action))
 
 
-  for (var i = 0; i <= 10; i += 1) {
-    
-    macAddr_loop_generator(1, 1, 1, dhcp_server_screen(configs.dhcp_server_screen.name + String(i)))
-    exit()
-  }
+  // for (var i = 0; i <= 10; i += 1) {
+
+  //   macAddr_loop_generator(1, 1, 1, dhcp_server_screen(randChar(32)))
+  //   exit()
+  // }
+
+  // callbackFunc
+ loop(5, 1, 1, function(index){
+  ip_access_list_standard('STIP' + String(index))
+ })
+ loop(5, 6, 1, function(index){
+  ipv6_access_list_standard('STIPV6' + String(index))
+ })
 }
 
 
