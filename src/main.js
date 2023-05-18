@@ -29,6 +29,9 @@ var configs = {
   arpList: {
     name: 'arpList2',
     action: 'Deny'
+  },
+  dhcp_server_screen: {
+    name: 'profile'
   }
 }
 
@@ -192,10 +195,44 @@ function authentication(charLength, vlanID) {
   send(command, 2000)
 }
 
+function edit_dhcp_server_screen_profile(profileName) {
+  // auto created if doesnt exist
+
+  var command = 'dhcp-server-screen profile ' + profileName + '\n'
+  send(command)
+}
+
+function dhcp_server_screen(profileName) {
+  edit_dhcp_server_screen_profile(profileName)
+
+  return function (macAddr) {
+    var command = 'based-on hardware-address ' + macAddr + '\n'
+    send(command)
+  }
+}
+
+function login() {
+  send('\n')
+  send('admin\n')
+  send('admin\n')
+  send('conf t \n')
+}
+
+function pipeLine(num, base, step) {
+  return function () {
+    for (var i = base; i < base + num * step; i += step) {
+      for (var j = 0; j < arguments.length; j += 1) {
+        // only takes function as param
+        arguments[j]()
+      }
+    }
+  }
+}
 
 // entry point
 function main() {
-  send('conf t \n')
+  login()
+
 
   // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
@@ -203,7 +240,14 @@ function main() {
   //   authentication(10, '')
   // }
 
-  v4_loop_generator(17, 1, 1, edit_arp_list(configs.arpList.action))
+  // v4_loop_generator(17, 1, 1, edit_arp_list(configs.arpList.action))
+
+
+  for (var i = 0; i <= 10; i += 1) {
+    
+    macAddr_loop_generator(1, 1, 1, dhcp_server_screen(configs.dhcp_server_screen.name + String(i)))
+    exit()
+  }
 }
 
 
