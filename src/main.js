@@ -198,14 +198,14 @@ function edit_arp_list(act, ipType) {
   }
 }
 
-function authentication(charLength, vlanID) {
+function authentication(username, password, vlanID) {
   if (vlanID) {
-    var command = 'authentication username ' + randChar(charLength) + ' password 0 ' + randChar(charLength) + ' vlan ' + vlanID + '\n'
+    var command = 'authentication username ' + username + ' password 0 ' + password + ' vlan ' + vlanID + '\n'
   }
   else {
-    var command = 'authentication username ' + randChar(charLength) + ' password 0 ' + randChar(charLength) + '\n'
+    var command = 'authentication username ' + username + ' password 0 ' + password + '\n'
   }
-  send(command, 2000)
+  send(command)
 }
 
 function edit_dhcp_server_screen_profile(profileName) {
@@ -274,10 +274,15 @@ function loop(num, base, step, callbackFunc) {
   }
 }
 
+function login_fail(acc, pwd) {
+  send(acc + '\n')
+  send(pwd + '\n')
+}
+
 // entry point
 function main() {
   clear_running_config()
-  login()
+  // login()
   enable_https_server()
   web_timeout()
 
@@ -303,6 +308,14 @@ function main() {
   //  loop(5, 6, 1, function(index){
   //   ipv6_access_list_standard('STIPV6' + String(index))
   //  })
+
+  // loop(257, 1, 1, function(index){
+  //   authentication(index, index)
+  // })
+
+  loop(4097, 1, 1, function(index){
+    login_fail(index, index)
+  })
 }
 
 
