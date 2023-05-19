@@ -282,9 +282,12 @@ function login_fail(acc, pwd) {
 // entry point
 function main() {
   clear_running_config()
-  // login()
+  login()
   enable_https_server()
   web_timeout()
+  exit()
+  exit()
+
 
   // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
