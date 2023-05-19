@@ -257,6 +257,19 @@ function enable_https_server() {
   send('ip http sec \n')
 }
 
+function snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, stdIPAcessListName) {
+  var version = ['v1', 'v2c']
+  var v = version[Math.round(Math.random())]
+  var readSyntax = readName === '' ?  '' : ' read ' + readName 
+  var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
+  var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
+
+  var command = 'snmp group ' + groupName + ' ' + v + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
+
+  send(command)
+}
+
+// utils
 function pipeLine(num, base, step) {
   return function () {
     for (var i = base; i < base + num * step; i += step) {
@@ -279,16 +292,19 @@ function login_fail(acc, pwd) {
   send(pwd + '\n')
 }
 
+function genRand() {
+  return Math.round(Math.random())
+}
+
 // entry point
 function main() {
   clear_running_config()
   login()
   enable_https_server()
   web_timeout()
-  exit()
-  exit()
 
 
+  var accessListCache = []
   // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
   // for(var i = 1; i <= 10; i += 1) {
@@ -304,21 +320,32 @@ function main() {
   //   exit()
   // }
 
-  // callbackFunc
-  //  loop(5, 1, 1, function(index){
-  //   ip_access_list_standard('STIP' + String(index))
-  //  })
-  //  loop(5, 6, 1, function(index){
-  //   ipv6_access_list_standard('STIPV6' + String(index))
-  //  })
+
+  loop(25, 1, 1, function (index) {
+    ip_access_list_standard('STIP' + String(index))
+    accessListCache.push('STIP' + String(index))
+    exit()
+  })
+  loop(25, 26, 1, function (index) {
+    ipv6_access_list_standard('STIPV6' + String(index))
+    accessListCache.push('STIPV6' + String(index))
+    exit()
+  })
 
   // loop(257, 1, 1, function(index){
   //   authentication(index, index)
   // })
 
-  loop(4097, 1, 1, function(index){
-    login_fail(index, index)
+  loop(46, 1, 1, function (index) {
+
+    var readName = genRand() === 1 ? randChar(5) : ''
+    var writeName = genRand() === 1 ? randChar(5) : ''
+    var notifyName = genRand() === 1? randChar(5) : ''
+
+    snmpv1_v2c_group_table(randChar(5), readName, writeName, notifyName, accessListCache[index - 1])
+
   })
+
 }
 
 
