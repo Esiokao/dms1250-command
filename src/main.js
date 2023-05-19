@@ -314,7 +314,7 @@ function genRand() {
 function main() {
   clear_running_config()
   login()
-  // enable_https_server()
+  enable_https_server()
   web_timeout()
 
 
