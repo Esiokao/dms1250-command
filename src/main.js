@@ -12,6 +12,7 @@ eval(Include('apis/send.js'))
 eval(Include('apis/sleep.js'))
 eval(Include('utils/decToHex.js'))
 eval(Include('utils/randChar.js'))
+eval(Include('utils/randNum.js'))
 //-----------------------------------------------
 
 var endl = '\n'
@@ -269,6 +270,19 @@ function snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, stdI
   send(command)
 }
 
+function snmpv3_group_table(groupName, readName, writeName, notifyName, stdIPAcessListName) {
+  var version = 'v3'
+  var secLvlArr = ['auth', 'noauth', 'priv']
+  var secLvl = secLvlArr[randNum(1) % 3]
+  var readSyntax = readName === '' ?  '' : ' read ' + readName 
+  var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
+  var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
+
+  var command = 'snmp group ' + groupName + ' ' + version + ' ' + secLvl + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
+
+  send(command)
+}
+
 // utils
 function pipeLine(num, base, step) {
   return function () {
@@ -300,7 +314,7 @@ function genRand() {
 function main() {
   clear_running_config()
   login()
-  enable_https_server()
+  // enable_https_server()
   web_timeout()
 
 
@@ -332,6 +346,8 @@ function main() {
     exit()
   })
 
+  
+
   // loop(257, 1, 1, function(index){
   //   authentication(index, index)
   // })
@@ -342,7 +358,7 @@ function main() {
     var writeName = genRand() === 1 ? randChar(5) : ''
     var notifyName = genRand() === 1? randChar(5) : ''
 
-    snmpv1_v2c_group_table(randChar(5), readName, writeName, notifyName, accessListCache[index - 1])
+    snmpv3_group_table(randChar(5), readName, writeName, notifyName, accessListCache[index - 1])
 
   })
 
