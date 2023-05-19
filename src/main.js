@@ -261,7 +261,7 @@ function enable_https_server() {
 function snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, stdIPAcessListName) {
   var version = ['v1', 'v2c']
   var v = version[Math.round(Math.random())]
-  var readSyntax = readName === '' ?  '' : ' read ' + readName 
+  var readSyntax = readName === '' ? '' : ' read ' + readName
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
 
@@ -274,12 +274,18 @@ function snmpv3_group_table(groupName, readName, writeName, notifyName, stdIPAce
   var version = 'v3'
   var secLvlArr = ['auth', 'noauth', 'priv']
   var secLvl = secLvlArr[randNum(1) % 3]
-  var readSyntax = readName === '' ?  '' : ' read ' + readName 
+  var readSyntax = readName === '' ? '' : ' read ' + readName
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
 
   var command = 'snmp group ' + groupName + ' ' + version + ' ' + secLvl + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
 
+  send(command)
+}
+
+function snmp_user_table(userName, groupName, stdIPAcessListName) {
+  var version = 'v1'
+  var command = 'snmp user ' + userName + ' ' + groupName + ' ' + version + ' access ' + stdIPAcessListName + '\n'
   send(command)
 }
 
@@ -292,6 +298,12 @@ function pipeLine(num, base, step) {
         arguments[j]()
       }
     }
+  }
+}
+
+function defer(fn) {
+  return function () {
+    fn.apply(null, arguments)
   }
 }
 
@@ -310,15 +322,26 @@ function genRand() {
   return Math.round(Math.random())
 }
 
-// entry point
-function main() {
+function httpInit() {
+  clear_running_config()
+  login()
+  web_timeout()
+}
+
+function httpsInit() {
   clear_running_config()
   login()
   enable_https_server()
   web_timeout()
+}
 
+// entry point
+function main() {
+  httpInit()
+  // httpsInit()
 
   var accessListCache = []
+  var snmpGroupListCache = []
   // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
 
   // for(var i = 1; i <= 10; i += 1) {
@@ -336,17 +359,19 @@ function main() {
 
 
   loop(25, 1, 1, function (index) {
-    ip_access_list_standard('STIP' + String(index))
-    accessListCache.push('STIP' + String(index))
+    var accessListName = 'S' + index
+    ip_access_list_standard(accessListName)
+    accessListCache.push(accessListName)
     exit()
   })
   loop(25, 26, 1, function (index) {
-    ipv6_access_list_standard('STIPV6' + String(index))
-    accessListCache.push('STIPV6' + String(index))
+    var accessListName = 'S' + index
+    ipv6_access_list_standard(accessListName)
+    accessListCache.push(accessListName)
     exit()
   })
 
-  
+
 
   // loop(257, 1, 1, function(index){
   //   authentication(index, index)
@@ -356,12 +381,18 @@ function main() {
 
     var readName = genRand() === 1 ? randChar(5) : ''
     var writeName = genRand() === 1 ? randChar(5) : ''
-    var notifyName = genRand() === 1? randChar(5) : ''
-
-    snmpv3_group_table(randChar(5), readName, writeName, notifyName, accessListCache[index - 1])
-
+    var notifyName = genRand() === 1 ? randChar(5) : ''
+    var groupName = 'snmpGroup' + index 
+    var accessListName = 'S' + index
+    snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, accessListName)
   })
 
+  loop(51, 1, 1, function (index) {
+    var userName = 'user' + index
+    var groupName = 'snmpGroup' + ((index % 45) + 1 )
+    var accessListName = 'S' + index 
+    snmp_user_table(userName, groupName, accessListName)
+  })
 }
 
 
