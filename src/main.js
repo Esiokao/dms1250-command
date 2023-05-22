@@ -290,9 +290,14 @@ function rmon_event(evtIdx, evtDesc) {
   send(command)
 }
 
+function rmon_event_log_trap(evtIdx, evtDesc) {
+  var command = 'rmon event ' + evtIdx + ' log' + ' trap 123' + ' owner 123' + ' description ' + evtDesc + '\n'
+  send(command)
+}
+
 function rmon_alarm(alarmIdx, intervel, sampleType, risingThresholdEvtVal, risingThresholdEvtNum, fallingThresholdVal, fallingThresholdEvtNum) {
-  var x = 10
-  var y = 1
+  var x = 11
+  var y = 8
   var variable = '1.3.6.1.2.1.2.2.1' + '.' + String(x) + '.' + String(y)
   if (risingThresholdEvtVal < fallingThresholdVal) {
     var tmp = risingThresholdEvtVal
@@ -369,8 +374,8 @@ function httpsInit() {
 
 // entry point
 function main() {
-  httpInit()
-  // httpsInit()
+  // httpInit()
+  httpsInit()
 
   var accessListCache = []
   var snmpGroupListCache = []
@@ -426,15 +431,20 @@ function main() {
   //   snmp_user_table(userName, groupName, accessListName)
   // })
 
-  loop(257, 1, 1, function (index) {
-    var eventIndex = index
-    var eventDesc = randChar(127) // 1~127chars
-    rmon_event(eventIndex, eventDesc)
-  })
+  // loop(257, 1, 1, function (index) {
+  //   var eventIndex = index
+  //   var eventDesc = randChar(127) // 1~127chars
+  //   rmon_event(eventIndex, eventDesc)
+  // })
 
-  loop(257, 1, 1, function (index) {
-    rmon_alarm(index, 5, 'absolute', 5, index, 1, index)
-  })
+  // loop(257, 1, 1, function (index) {
+  //   rmon_alarm(index, 5, 'absolute', 5, index, 1, index)
+  // })
+
+  rmon_event_log_trap(1, 'event')
+  loop(51, 1, 1, function(index){
+    rmon_alarm(index, 2, 'absolute', 5, 1, 1, 1)
+  }) 
 }
 
 
