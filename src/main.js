@@ -260,9 +260,9 @@ function snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, stdI
   var readSyntax = readName === '' ? '' : ' read ' + readName
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
-  
+
   var command = 'snmp group ' + groupName + ' ' + v + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
-  
+
   send(command)
 }
 
@@ -273,7 +273,7 @@ function snmpv3_group_table(groupName, readName, writeName, notifyName, stdIPAce
   var readSyntax = readName === '' ? '' : ' read ' + readName
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
-  
+
   var command = 'snmp group ' + groupName + ' ' + version + ' ' + secLvl + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
 
   send(command)
@@ -287,6 +287,19 @@ function snmp_user_table(userName, groupName, stdIPAcessListName) {
 
 function rmon_event(evtIdx, evtDesc) {
   var command = 'rmon event ' + evtIdx + ' description ' + evtDesc + '\n'
+  send(command)
+}
+
+function rmon_alarm(alarmIdx, intervel, sampleType, risingThresholdEvtVal, risingThresholdEvtNum, fallingThresholdVal, fallingThresholdEvtNum) {
+  var x = 10
+  var y = 1
+  var variable = '1.3.6.1.2.1.2.2.1' + '.' + String(x) + '.' + String(y)
+  if (risingThresholdEvtVal < fallingThresholdVal) {
+    var tmp = risingThresholdEvtVal
+    risingThresholdEvtVal = fallingThresholdVal
+    fallingThresholdVal = tmp
+  }
+  var command = 'rmon alarm ' + alarmIdx + ' ' + variable + ' ' + intervel + ' ' + sampleType + ' rising-threshold ' + risingThresholdEvtNum + ' ' + risingThresholdEvtVal + ' falling-threshold ' + fallingThresholdVal + ' ' + fallingThresholdEvtNum + '\n'
   send(command)
 }
 
@@ -314,6 +327,8 @@ function loop(num, base, step, callbackFunc) {
   }
 }
 
+
+
 function login_fail(acc, pwd) {
   send(acc + '\n')
   send(pwd + '\n')
@@ -321,6 +336,16 @@ function login_fail(acc, pwd) {
 
 function genRand() {
   return Math.round(Math.random())
+}
+
+function randX(min, max, expectsArr) {
+  var result = Math.floor(Math.random() * (max - min) + min);
+  var exist = false
+  for (var i = 0; i < expectsArr.length; i += 1) {
+    if (expectsArr[i] === result) exist = true
+  }
+  if (exist) return randX(min, max, expects)
+  return result
 }
 
 function httpInit() {
@@ -401,10 +426,14 @@ function main() {
   //   snmp_user_table(userName, groupName, accessListName)
   // })
 
-  loop(257, 1, 1, function(index){
+  loop(257, 1, 1, function (index) {
     var eventIndex = index
     var eventDesc = randChar(127) // 1~127chars
     rmon_event(eventIndex, eventDesc)
+  })
+
+  loop(257, 1, 1, function (index) {
+    rmon_alarm(index, 5, 'absolute', 5, index, 1, index)
   })
 }
 
