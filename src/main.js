@@ -1,11 +1,10 @@
 /**
  * @env ES3 / JSscript
  * @author perry@Cameo <https://github.com/Esiokao>
- * @description utility scripts to setup poe-poh
+ * @description utility scripts to dms1250 cli
  * @license MIT
  * @version 0.0.1
-*/
-
+ */
 
 // dynamic import api modules
 eval(Include('apis/send.js'))
@@ -13,6 +12,7 @@ eval(Include('apis/sleep.js'))
 eval(Include('utils/decToHex.js'))
 eval(Include('utils/randChar.js'))
 eval(Include('utils/randNum.js'))
+eval(Include('apis/Initializer.js'))
 //-----------------------------------------------
 
 var endl = '\n'
@@ -37,11 +37,25 @@ var configs = {
   }
 }
 
-
-
 function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
   // rule 108 permit any any ethernet-type 70A 70A
-  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + macSrc + ' ' + macDest + ' ' + 'ethernet-type' + ' ' + ethType + ' ' + ethMask + '\n'
+  var command =
+    'rule' +
+    ' ' +
+    seqNum +
+    ' ' +
+    act +
+    ' ' +
+    macSrc +
+    ' ' +
+    macDest +
+    ' ' +
+    'ethernet-type' +
+    ' ' +
+    ethType +
+    ' ' +
+    ethMask +
+    '\n'
   send(command)
 }
 
@@ -52,38 +66,62 @@ function mac_access_list_extended(name, number) {
 }
 
 function ipv6_access_list_extended(name) {
-  // ipv6 access-list [extended] NAME 
+  // ipv6 access-list [extended] NAME
   var command = 'ipv6 access-list extended' + ' ' + name + '\n'
   send(command)
 }
 
 function ipv6_access_list_standard(name) {
-  // ipv6 access-list NAME 
+  // ipv6 access-list NAME
   var command = 'ipv6 access-list ' + ' ' + name + '\n'
   send(command)
 }
 
 function ip_access_list_extended(name) {
-  // ip access-list [extended] NAME 
+  // ip access-list [extended] NAME
   var command = 'ip access-list extended' + ' ' + name + '\n'
   send(command)
 }
 
 function ip_access_list_standard(name) {
-  // ip access-list NAME 
+  // ip access-list NAME
   var command = 'ip access-list' + ' ' + name + '\n'
   send(command)
 }
 
 function acl_ipv6_config(seqNum, act, proto, srcIP, destIP) {
   // rule 1 permit tcp any any
-  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + proto + ' ' + srcIP + ' ' + destIP + '\n'
+  var command =
+    'rule' +
+    ' ' +
+    seqNum +
+    ' ' +
+    act +
+    ' ' +
+    proto +
+    ' ' +
+    srcIP +
+    ' ' +
+    destIP +
+    '\n'
   send(command)
 }
 
 function acl_ip_config(seqNum, act, proto, srcIP, destIP) {
   // rule 1 permit tcp any any
-  var command = 'rule' + ' ' + seqNum + ' ' + act + ' ' + proto + ' ' + srcIP + ' ' + destIP + '\n'
+  var command =
+    'rule' +
+    ' ' +
+    seqNum +
+    ' ' +
+    act +
+    ' ' +
+    proto +
+    ' ' +
+    srcIP +
+    ' ' +
+    destIP +
+    '\n'
   send(command)
 }
 
@@ -93,12 +131,25 @@ function exit() {
 }
 
 function interface(int) {
-  var commnad = 'interface' + ' ' + 'ethernet' + ' ' + '1/0/' + String(int) + '\n'
+  var commnad =
+    'interface' + ' ' + 'ethernet' + ' ' + '1/0/' + String(int) + '\n'
   send(commnad)
 }
 
 function port_security(macAddr, vlan) {
-  var command = 'switchport' + ' ' + 'port-security' + ' ' + 'mac-address' + ' ' + macAddr + ' ' + 'vlan' + ' ' + vlan + '\n'
+  var command =
+    'switchport' +
+    ' ' +
+    'port-security' +
+    ' ' +
+    'mac-address' +
+    ' ' +
+    macAddr +
+    ' ' +
+    'vlan' +
+    ' ' +
+    vlan +
+    '\n'
   send(command)
 }
 
@@ -127,12 +178,22 @@ function port_security(macAddr, vlan) {
 // }
 
 function radius_server(ip) {
-  var command = 'radius-server host ' + ip + ' key 0 ' + Math.ceil(Math.random() * 1000000) + '\n'
+  var command =
+    'radius-server host ' +
+    ip +
+    ' key 0 ' +
+    Math.ceil(Math.random() * 1000000) +
+    '\n'
   send(command)
 }
 
 function tacacs_server(ip) {
-  var command = 'tacacs-server host ' + ip + ' key 0 ' + Math.ceil(Math.random() * 1000000) + '\n'
+  var command =
+    'tacacs-server host ' +
+    ip +
+    ' key 0 ' +
+    Math.ceil(Math.random() * 1000000) +
+    '\n'
   send(command)
 }
 
@@ -158,7 +219,14 @@ function v4_loop_generator(num, base, step, fn) {
   for (var i = base; i < base + num * step; i += step) {
     third = Math.floor(i / 255)
     fourth = i % 255
-    ipv4 = String(first) + '.' + String(second) + '.' + String(third) + '.' + String(fourth)
+    ipv4 =
+      String(first) +
+      '.' +
+      String(second) +
+      '.' +
+      String(third) +
+      '.' +
+      String(fourth)
 
     fn(ipv4)
   }
@@ -179,7 +247,9 @@ function v6_loop_generator(num, base, step, fn) {
 function random_loop_generator(generator1, generator2) {
   return function (num, step, fn1, fn2) {
     for (var i = 0; i < num; i += step) {
-      Math.round(Math.random()) ? generator1(1, i, step, fn1) : generator2(1, i, step, fn2)
+      Math.round(Math.random())
+        ? generator1(1, i, step, fn1)
+        : generator2(1, i, step, fn2)
     }
   }
 }
@@ -201,10 +271,17 @@ function edit_arp_list(act, ipType) {
 
 function authentication(username, password, vlanID) {
   if (vlanID) {
-    var command = 'authentication username ' + username + ' password 0 ' + password + ' vlan ' + vlanID + '\n'
-  }
-  else {
-    var command = 'authentication username ' + username + ' password 0 ' + password + '\n'
+    var command =
+      'authentication username ' +
+      username +
+      ' password 0 ' +
+      password +
+      ' vlan ' +
+      vlanID +
+      '\n'
+  } else {
+    var command =
+      'authentication username ' + username + ' password 0 ' + password + '\n'
   }
   send(command)
 }
@@ -225,48 +302,42 @@ function dhcp_server_screen(profileName) {
   }
 }
 
-function login() {
-  send('\n')
-  send('admin\n')
-  send('admin\n')
-  send('conf t \n')
-}
-
-function clear_running_config() {
-  send('exit\n')
-  send('exit\n')
-  send('exit\n')
-  send('exit\n')
-  send('\n')
-  send('\n')
-  send('admin\n')
-  send('admin\n')
-  send('\n')
-  send('clear running \n', 1000)
-  send('y\n')
-  sleep(3000)
-}
-
-function web_timeout(timeout) {
-  timeout = timeout ? timeout : '36000'
-  var command = 'ip http time idle ' + timeout + '\n'
-  send(command)
-}
-
-
-function snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, stdIPAcessListName) {
+function snmpv1_v2c_group_table(
+  groupName,
+  readName,
+  writeName,
+  notifyName,
+  stdIPAcessListName
+) {
   var version = ['v1', 'v2c']
   var v = version[Math.round(Math.random())]
   var readSyntax = readName === '' ? '' : ' read ' + readName
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
 
-  var command = 'snmp group ' + groupName + ' ' + v + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
+  var command =
+    'snmp group ' +
+    groupName +
+    ' ' +
+    v +
+    ' ' +
+    readSyntax +
+    writeSyntax +
+    notifySyntax +
+    ' access ' +
+    stdIPAcessListName +
+    '\n'
 
   send(command)
 }
 
-function snmpv3_group_table(groupName, readName, writeName, notifyName, stdIPAcessListName) {
+function snmpv3_group_table(
+  groupName,
+  readName,
+  writeName,
+  notifyName,
+  stdIPAcessListName
+) {
   var version = 'v3'
   var secLvlArr = ['auth', 'noauth', 'priv']
   var secLvl = secLvlArr[randNum(1) % 3]
@@ -274,14 +345,36 @@ function snmpv3_group_table(groupName, readName, writeName, notifyName, stdIPAce
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
 
-  var command = 'snmp group ' + groupName + ' ' + version + ' ' + secLvl + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
+  var command =
+    'snmp group ' +
+    groupName +
+    ' ' +
+    version +
+    ' ' +
+    secLvl +
+    ' ' +
+    readSyntax +
+    writeSyntax +
+    notifySyntax +
+    ' access ' +
+    stdIPAcessListName +
+    '\n'
 
   send(command)
 }
 
 function snmp_user_table(userName, groupName, stdIPAcessListName) {
   var version = 'v1'
-  var command = 'snmp user ' + userName + ' ' + groupName + ' ' + version + ' access ' + stdIPAcessListName + '\n'
+  var command =
+    'snmp user ' +
+    userName +
+    ' ' +
+    groupName +
+    ' ' +
+    version +
+    ' access ' +
+    stdIPAcessListName +
+    '\n'
   send(command)
 }
 
@@ -291,11 +384,27 @@ function rmon_event(evtIdx, evtDesc) {
 }
 
 function rmon_event_log_trap(evtIdx, evtDesc) {
-  var command = 'rmon event ' + evtIdx + ' log' + ' trap 123' + ' owner 123' + ' description ' + evtDesc + '\n'
+  var command =
+    'rmon event ' +
+    evtIdx +
+    ' log' +
+    ' trap 123' +
+    ' owner 123' +
+    ' description ' +
+    evtDesc +
+    '\n'
   send(command)
 }
 
-function rmon_alarm(alarmIdx, intervel, sampleType, risingThresholdEvtVal, risingThresholdEvtNum, fallingThresholdVal, fallingThresholdEvtNum) {
+function rmon_alarm(
+  alarmIdx,
+  intervel,
+  sampleType,
+  risingThresholdEvtVal,
+  risingThresholdEvtNum,
+  fallingThresholdVal,
+  fallingThresholdEvtNum
+) {
   var x = 11
   var y = 8
   var variable = '1.3.6.1.2.1.2.2.1' + '.' + String(x) + '.' + String(y)
@@ -304,7 +413,24 @@ function rmon_alarm(alarmIdx, intervel, sampleType, risingThresholdEvtVal, risin
     risingThresholdEvtVal = fallingThresholdVal
     fallingThresholdVal = tmp
   }
-  var command = 'rmon alarm ' + alarmIdx + ' ' + variable + ' ' + intervel + ' ' + sampleType + ' rising-threshold ' + risingThresholdEvtVal + ' ' + risingThresholdEvtNum + ' falling-threshold ' + fallingThresholdVal + ' ' + fallingThresholdEvtNum + '\n'
+  var command =
+    'rmon alarm ' +
+    alarmIdx +
+    ' ' +
+    variable +
+    ' ' +
+    intervel +
+    ' ' +
+    sampleType +
+    ' rising-threshold ' +
+    risingThresholdEvtVal +
+    ' ' +
+    risingThresholdEvtNum +
+    ' falling-threshold ' +
+    fallingThresholdVal +
+    ' ' +
+    fallingThresholdEvtNum +
+    '\n'
   send(command)
 }
 
@@ -332,8 +458,6 @@ function loop(num, base, step, callbackFunc) {
   }
 }
 
-
-
 function login_fail(acc, pwd) {
   send(acc + '\n')
   send(pwd + '\n')
@@ -344,7 +468,7 @@ function genRand() {
 }
 
 function randX(min, max, expectsArr) {
-  var result = Math.floor(Math.random() * (max - min) + min);
+  var result = Math.floor(Math.random() * (max - min) + min)
   var exist = false
   for (var i = 0; i < expectsArr.length; i += 1) {
     if (expectsArr[i] === result) exist = true
@@ -353,29 +477,13 @@ function randX(min, max, expectsArr) {
   return result
 }
 
-function httpInit() {
-  clear_running_config()
-  login()
-  web_timeout()
-}
-
-function enable_https_server() {
-  send('conf t \n')
-  send('ip http sec \n')
-}
-
-function httpsInit() {
-  clear_running_config()
-  login()
-  enable_https_server()
-  web_timeout()
-}
 // -- utils end------------------
 
 // entry point
 function main() {
-  // httpInit()
-  httpsInit()
+  var initializer = new Initializer()
+  initializer.http()
+  // initializer.https()
 
   var accessListCache = []
   var snmpGroupListCache = []
@@ -387,13 +495,11 @@ function main() {
 
   // v4_loop_generator(17, 1, 1, edit_arp_list(configs.arpList.action))
 
-
   // for (var i = 0; i <= 10; i += 1) {
 
   //   macAddr_loop_generator(1, 1, 1, dhcp_server_screen(randChar(32)))
   //   exit()
   // }
-
 
   // loop(25, 1, 1, function (index) {
   //   var accessListName = 'S' + index
@@ -408,8 +514,6 @@ function main() {
   //   exit()
   // })
 
-
-
   // loop(257, 1, 1, function(index){
   //   authentication(index, index)
   // })
@@ -419,7 +523,7 @@ function main() {
   //   var readName = genRand() === 1 ? randChar(5) : ''
   //   var writeName = genRand() === 1 ? randChar(5) : ''
   //   var notifyName = genRand() === 1 ? randChar(5) : ''
-  //   var groupName = 'snmpGroup' + index 
+  //   var groupName = 'snmpGroup' + index
   //   var accessListName = 'S' + index
   //   snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, accessListName)
   // })
@@ -427,7 +531,7 @@ function main() {
   // loop(51, 1, 1, function (index) {
   //   var userName = 'user' + index
   //   var groupName = 'snmpGroup' + ((index % 45) + 1 )
-  //   var accessListName = 'S' + index 
+  //   var accessListName = 'S' + index
   //   snmp_user_table(userName, groupName, accessListName)
   // })
 
@@ -442,13 +546,10 @@ function main() {
   // })
 
   rmon_event_log_trap(1, 'event')
-  loop(51, 1, 1, function(index){
+  loop(51, 1, 1, function (index) {
     rmon_alarm(index, 2, 'absolute', 5, 1, 1, 1)
-  }) 
+  })
 }
-
-
-
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
 // NOTE: you may need to update your script engines and scripting runtime
