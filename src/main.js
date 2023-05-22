@@ -299,7 +299,7 @@ function rmon_alarm(alarmIdx, intervel, sampleType, risingThresholdEvtVal, risin
     risingThresholdEvtVal = fallingThresholdVal
     fallingThresholdVal = tmp
   }
-  var command = 'rmon alarm ' + alarmIdx + ' ' + variable + ' ' + intervel + ' ' + sampleType + ' rising-threshold ' + risingThresholdEvtNum + ' ' + risingThresholdEvtVal + ' falling-threshold ' + fallingThresholdVal + ' ' + fallingThresholdEvtNum + '\n'
+  var command = 'rmon alarm ' + alarmIdx + ' ' + variable + ' ' + intervel + ' ' + sampleType + ' rising-threshold ' + risingThresholdEvtVal + ' ' + risingThresholdEvtNum + ' falling-threshold ' + fallingThresholdVal + ' ' + fallingThresholdEvtNum + '\n'
   send(command)
 }
 
@@ -369,8 +369,8 @@ function httpsInit() {
 
 // entry point
 function main() {
-  // httpInit()
-  httpsInit()
+  httpInit()
+  // httpsInit()
 
   var accessListCache = []
   var snmpGroupListCache = []
