@@ -253,10 +253,6 @@ function web_timeout(timeout) {
   send(command)
 }
 
-function enable_https_server() {
-  send('conf t \n')
-  send('ip http sec \n')
-}
 
 function snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, stdIPAcessListName) {
   var version = ['v1', 'v2c']
@@ -264,9 +260,9 @@ function snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, stdI
   var readSyntax = readName === '' ? '' : ' read ' + readName
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
-
+  
   var command = 'snmp group ' + groupName + ' ' + v + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
-
+  
   send(command)
 }
 
@@ -277,7 +273,7 @@ function snmpv3_group_table(groupName, readName, writeName, notifyName, stdIPAce
   var readSyntax = readName === '' ? '' : ' read ' + readName
   var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
   var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
-
+  
   var command = 'snmp group ' + groupName + ' ' + version + ' ' + secLvl + ' ' + readSyntax + writeSyntax + notifySyntax + ' access ' + stdIPAcessListName + '\n'
 
   send(command)
@@ -289,7 +285,12 @@ function snmp_user_table(userName, groupName, stdIPAcessListName) {
   send(command)
 }
 
-// utils
+function rmon_event(evtIdx, evtDesc) {
+  var command = 'rmon event ' + evtIdx + ' description ' + evtDesc + '\n'
+  send(command)
+}
+
+// -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
     for (var i = base; i < base + num * step; i += step) {
@@ -328,17 +329,23 @@ function httpInit() {
   web_timeout()
 }
 
+function enable_https_server() {
+  send('conf t \n')
+  send('ip http sec \n')
+}
+
 function httpsInit() {
   clear_running_config()
   login()
   enable_https_server()
   web_timeout()
 }
+// -- utils end------------------
 
 // entry point
 function main() {
-  httpInit()
-  // httpsInit()
+  // httpInit()
+  httpsInit()
 
   var accessListCache = []
   var snmpGroupListCache = []
@@ -358,18 +365,18 @@ function main() {
   // }
 
 
-  loop(25, 1, 1, function (index) {
-    var accessListName = 'S' + index
-    ip_access_list_standard(accessListName)
-    accessListCache.push(accessListName)
-    exit()
-  })
-  loop(25, 26, 1, function (index) {
-    var accessListName = 'S' + index
-    ipv6_access_list_standard(accessListName)
-    accessListCache.push(accessListName)
-    exit()
-  })
+  // loop(25, 1, 1, function (index) {
+  //   var accessListName = 'S' + index
+  //   ip_access_list_standard(accessListName)
+  //   accessListCache.push(accessListName)
+  //   exit()
+  // })
+  // loop(25, 26, 1, function (index) {
+  //   var accessListName = 'S' + index
+  //   ipv6_access_list_standard(accessListName)
+  //   accessListCache.push(accessListName)
+  //   exit()
+  // })
 
 
 
@@ -377,21 +384,27 @@ function main() {
   //   authentication(index, index)
   // })
 
-  loop(46, 1, 1, function (index) {
+  // loop(46, 1, 1, function (index) {
 
-    var readName = genRand() === 1 ? randChar(5) : ''
-    var writeName = genRand() === 1 ? randChar(5) : ''
-    var notifyName = genRand() === 1 ? randChar(5) : ''
-    var groupName = 'snmpGroup' + index 
-    var accessListName = 'S' + index
-    snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, accessListName)
-  })
+  //   var readName = genRand() === 1 ? randChar(5) : ''
+  //   var writeName = genRand() === 1 ? randChar(5) : ''
+  //   var notifyName = genRand() === 1 ? randChar(5) : ''
+  //   var groupName = 'snmpGroup' + index 
+  //   var accessListName = 'S' + index
+  //   snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, accessListName)
+  // })
 
-  loop(51, 1, 1, function (index) {
-    var userName = 'user' + index
-    var groupName = 'snmpGroup' + ((index % 45) + 1 )
-    var accessListName = 'S' + index 
-    snmp_user_table(userName, groupName, accessListName)
+  // loop(51, 1, 1, function (index) {
+  //   var userName = 'user' + index
+  //   var groupName = 'snmpGroup' + ((index % 45) + 1 )
+  //   var accessListName = 'S' + index 
+  //   snmp_user_table(userName, groupName, accessListName)
+  // })
+
+  loop(257, 1, 1, function(index){
+    var eventIndex = index
+    var eventDesc = randChar(127) // 1~127chars
+    rmon_event(eventIndex, eventDesc)
   })
 }
 
