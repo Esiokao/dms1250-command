@@ -130,11 +130,7 @@ function exit(deferTime) {
   send(command, deferTime)
 }
 
-function interface(int) {
-  var commnad =
-    'interface' + ' ' + 'ethernet' + ' ' + '1/0/' + String(int) + '\n'
-  send(commnad)
-}
+
 
 function port_security(macAddr, vlan) {
   var command =
@@ -197,14 +193,17 @@ function tacacs_server(ip) {
   send(command)
 }
 
-function macAddr_loop_generator(num, base, step, fn) {
+function macAddr_loop_generator(num, base, step, type, fn) {
+  var prefix = '00-00-00-00'
+  if (type === 'multicast') prefix = '01-00-fe-05'
+
   for (var i = base; i < base + num * step; i += step) {
     eight = decToHex(i % 16)
     seven = decToHex(Math.floor(i / 16) % 16)
     six = decToHex(Math.floor(i / (16 * 8)) % 16)
     five = decToHex(Math.floor(i / (16 * 8 * 8)) % 16)
 
-    var macAddr = '00-00-00-00' + '-' + five + six + '-' + seven + eight
+    var macAddr = prefix + '-' + five + six + '-' + seven + eight
 
     fn(macAddr, i)
   }
@@ -300,6 +299,34 @@ function dhcp_server_screen(profileName) {
     var command = 'based-on hardware-address ' + macAddr + '\n'
     send(command)
   }
+}
+
+function vlan(idStart, idEnd) {
+  var command
+  if (idEnd) {
+    command = 'vlan ' + idStart + '-' + idEnd + '\n'
+  } else {
+    command = 'vlan ' + idStart
+  }
+  send(command)
+}
+
+// will enter into the interface configuration mode after fire this func
+function interface(interfaceID) {
+  var interfaceName = 'ethernet 1/0/' + interfaceID
+  var command = 'interface ' + interfaceName + '\n'
+  send(command)
+}
+
+// required to entered interface configuration mode first
+function config_interface_untagged_vlan_member(vlanIDStart, vlanIDEnd) {
+  // switchport hybrid allowed vlan remove 1
+  // switchport hybrid allowed vlan add untagged 1-2
+  var command = 'switchport hybrid allowed vlan add untagged ' + vlanIDStart + '\n'
+  if (vlanIDEnd) {
+    command = 'switchport hybrid allowed vlan add untagged ' + vlanIDStart + '-' + vlanIDEnd + '\n'
+  }
+  send(command)
 }
 
 function snmpv1_v2c_group_table(
@@ -435,9 +462,10 @@ function rmon_alarm(
 }
 
 function fdb_static_unicast(macAddr, vlanID, interfaceID) {
-  var command = 'mac-address-table static ' + macAddr + ' vlan ' + vlanID +  ' interface ' + interfaceID + '\n'
+  var command = 'mac-address-table static ' + macAddr + ' vlan ' + vlanID + ' interface ' + interfaceID + '\n'
   send(command)
 }
+
 // -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
@@ -449,6 +477,8 @@ function pipeLine(num, base, step) {
     }
   }
 }
+
+
 
 function defer(fn) {
   return function () {
@@ -549,13 +579,27 @@ function main() {
   //   rmon_alarm(index, 5, 'absolute', 5, index, 1, index)
   // })
 
-  send('vlan 1-300\n')
-  exit(5000)
-  macAddr_loop_generator(257, 1, 1, function(macAddr, index) {
-    var vlanID = 1
+
+  
+
+  var pipeLine1 = function pre() {
+    vlan(1, 300)
+    exit(3000)
+    return function (index) {
+      interface(index)
+      config_interface_untagged_vlan_member(1, 300)
+      exit(1000)
+    }
+  }
+
+  loop(10, 1, 1, pipeLine1())
+
+  macAddr_loop_generator(129, 1, 1, 'multicast',function(macAddr, index) {
+    var vlanID = index
     var interfaceID = 'ethernet 1/0/' + String((index % 10) + 1)
     fdb_static_unicast(macAddr, vlanID, interfaceID)
   })
+  
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
