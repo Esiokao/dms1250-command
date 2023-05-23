@@ -125,9 +125,9 @@ function acl_ip_config(seqNum, act, proto, srcIP, destIP) {
   send(command)
 }
 
-function exit() {
+function exit(deferTime) {
   var command = 'exit \n'
-  send(command)
+  send(command, deferTime)
 }
 
 function interface(int) {
@@ -200,13 +200,13 @@ function tacacs_server(ip) {
 function macAddr_loop_generator(num, base, step, fn) {
   for (var i = base; i < base + num * step; i += step) {
     eight = decToHex(i % 16)
-    seven = decToHex(Math.floor(i / 16))
-    six = decToHex(Math.floor(i / (16 * 8)))
-    five = decToHex(Math.floor(i / (16 * 8 * 8)))
+    seven = decToHex(Math.floor(i / 16) % 16)
+    six = decToHex(Math.floor(i / (16 * 8)) % 16)
+    five = decToHex(Math.floor(i / (16 * 8 * 8)) % 16)
 
     var macAddr = '00-00-00-00' + '-' + five + six + '-' + seven + eight
 
-    fn(macAddr)
+    fn(macAddr, i)
   }
 }
 
@@ -434,6 +434,10 @@ function rmon_alarm(
   send(command)
 }
 
+function fdb_static_unicast(macAddr, vlanID, interfaceID) {
+  var command = 'mac-address-table static ' + macAddr + ' vlan ' + vlanID +  ' interface ' + interfaceID + '\n'
+  send(command)
+}
 // -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
@@ -482,8 +486,8 @@ function randX(min, max, expectsArr) {
 // entry point
 function main() {
   var initializer = new Initializer()
-  initializer.http()
-  // initializer.https()
+  // initializer.http()
+  initializer.https()
 
   var accessListCache = []
   var snmpGroupListCache = []
@@ -545,9 +549,12 @@ function main() {
   //   rmon_alarm(index, 5, 'absolute', 5, index, 1, index)
   // })
 
-  rmon_event_log_trap(1, 'event')
-  loop(51, 1, 1, function (index) {
-    rmon_alarm(index, 2, 'absolute', 5, 1, 1, 1)
+  send('vlan 1-300\n')
+  exit(5000)
+  macAddr_loop_generator(257, 1, 1, function(macAddr, index) {
+    var vlanID = 1
+    var interfaceID = 'ethernet 1/0/' + String((index % 10) + 1)
+    fdb_static_unicast(macAddr, vlanID, interfaceID)
   })
 }
 
