@@ -239,10 +239,10 @@ function v4_loop_generator(num, base, step, fn, configs) {
 function v6_loop_generator(num, base, step, fn, configs) {
   var ipv6
   for (var i = base; i < base + num * step; i += step) {
-    var first = configs.first
+    var head = configs.head
     var rear = configs.rear
-    first = decToHex(first + i)
-    ipv6 = String(first) + '::' + String(rear)
+    head = decToHex(head + i)
+    ipv6 = String(head) + '::' + String(rear)
 
     fn(ipv6, i)
   }
@@ -493,6 +493,11 @@ function arp_staitc_route(networkAddr, mask, gateway) {
   send(command)
 }
 
+function ipv6_neighbor(ipv6Addr, vlanID, macAddr) {
+  var command = 'ipv6 neighbor ' + ipv6Addr + ' ' + vlanID + ' ' + macAddr + '\n'
+  send(command)
+}
+
 // -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
@@ -580,10 +585,10 @@ function main() {
     loop(num, start, step, function (index) {
       var _index = index
       var mask = '255.255.255.255'
-      v4_loop_generator(1 , _index, 1, function(networkAddr, index){
-        v4_loop_generator(1, _index, 1, function(gateway, index) {
+      v4_loop_generator(1, _index, 1, function (networkAddr, index) {
+        v4_loop_generator(1, _index, 1, function (gateway, index) {
           arp_staitc_route(networkAddr, mask, gateway)
-        }, {first: 192, second: 168, third:0})
+        }, { first: 192, second: 168, third: 0 })
       }, {
         first: 10,
         second: 90,
@@ -592,7 +597,21 @@ function main() {
     })
   }
 
-  arp_staitc_route_pipeline(129, 1, 1)
+  // arp_staitc_route_pipeline(129, 1, 1)
+
+  function ipv6_neighbor_pipeline(num, start, step) {
+    loop(num, start, step, function (index) {
+      var _index = index
+      var vlanID = 'vlan1'
+      v6_loop_generator(1, _index, 1, function(ipv6Addr) {
+        macAddr_loop_generator(1, _index, 1, function(macAddr){
+          ipv6_neighbor(ipv6Addr, vlanID, macAddr)
+        }, {})
+      }, {head: 8192, rear: 1})
+    })
+  }
+
+  ipv6_neighbor_pipeline(129, 1, 1)
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
