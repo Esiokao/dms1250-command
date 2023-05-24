@@ -488,6 +488,11 @@ function arp_static(ipv4Addr, macAddr) {
   send(command)
 }
 
+function arp_staitc_route(networkAddr, mask, gateway) {
+  var command = 'ip route ' + networkAddr + ' ' + mask + ' ' + gateway + '\n'
+  send(command)
+}
+
 // -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
@@ -558,19 +563,36 @@ function main() {
   // // v4_loop_generator(257, 1, 1, igmp_snooping_pipeline(1), {first: 224, second: 0, third: 1})
   // v6_loop_generator(129, 1, 1, ipv6_mld_group_pipeline(1), { first: 65284, rear: 1 })
 
-  function arp_static_pipeline(num, start, step) {
+  // function arp_static_pipeline(num, start, step) {
+  //   loop(num, start, step, function (index) {
+  //     var _index = index
+  //     v4_loop_generator(1, _index, 1, function (ipv4Addr, _index) {
+  //       macAddr_loop_generator(1, _index, 1, function (macAddr, _index) {
+  //         arp_static(ipv4Addr, macAddr)
+  //       }, {type: 'unicast'})
+  //     }, {first: 10, second: 90})
+  //   })
+  // }
+
+  // arp_static_pipeline(769, 1, 1)
+
+  function arp_staitc_route_pipeline(num, start, step) {
     loop(num, start, step, function (index) {
       var _index = index
-      v4_loop_generator(1, _index, 1, function (ipv4Addr, _index) {
-        macAddr_loop_generator(1, _index, 1, function (macAddr, _index) {
-          arp_static(ipv4Addr, macAddr)
-        }, {type: 'unicast'})
-      }, {first: 10, second: 90})
+      var mask = '255.255.255.255'
+      v4_loop_generator(1 , _index, 1, function(networkAddr, index){
+        v4_loop_generator(1, _index, 1, function(gateway, index) {
+          arp_staitc_route(networkAddr, mask, gateway)
+        }, {first: 192, second: 168, third:0})
+      }, {
+        first: 10,
+        second: 90,
+        third: 90
+      })
     })
   }
 
-  arp_static_pipeline(769, 1, 1)
-
+  arp_staitc_route_pipeline(129, 1, 1)
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
