@@ -234,15 +234,15 @@ function v4_loop_generator(num, base, step, fn, configs) {
   }
 }
 
-function v6_loop_generator(num, base, step, fn) {
+function v6_loop_generator(num, base, step, fn, configs) {
   var ipv6
   for (var i = base; i < base + num * step; i += step) {
-    var first = 8192
-    var rear = 1
+    var first = configs.first
+    var rear = configs.rear
     first = decToHex(first + i)
     ipv6 = String(first) + '::' + String(rear)
 
-    fn(ipv6)
+    fn(ipv6 ,i)
   }
 }
 
@@ -470,7 +470,10 @@ function fdb_static_unicast(macAddr, vlanID, interfaceID) {
   send(command)
 }
 
-
+function ipv6_mld_group(ipv6Addr, interfaceID) {
+  var command = 'ipv6 mld snooping static-group ' + ipv6Addr + ' interface ' + interfaceID + '\n'
+  send(command) 
+}
 
 // requried to enter vlan configuration mode first
 function igmp_snooping(groupAddr, interfaceID) { // interfaceID requried preprocess
@@ -523,23 +526,30 @@ function randX(min, max, expectsArr) {
   return result
 }
 
-// -- utils end------------------
-
-// entry point
+//-- entry point --------
 function main() {
   var initializer = new Initializer()
   // initializer.http()
   initializer.https()
 
-  var igmp_snooping_pipeline  = function pre(vlanID) {
+  // var igmp_snooping_pipeline  = function pre(vlanID) {
+  //   vlan(vlanID)
+  //   return function(groupAddr, index) {
+  //     var interfaceID = 'ethernet 1/0/' + ((index % 10)+1)
+  //     igmp_snooping(groupAddr, interfaceID)
+  //   }
+  // }
+
+  var ipv6_mld_group_pipeline = function pre(vlanID) {
     vlan(vlanID)
     return function(groupAddr, index) {
       var interfaceID = 'ethernet 1/0/' + ((index % 10)+1)
-      igmp_snooping(groupAddr, interfaceID)
+      ipv6_mld_group(groupAddr, interfaceID)
     }
   }
 
-  v4_loop_generator(257, 1, 1, igmp_snooping_pipeline(1), {first: 224, second: 0, third: 1})
+  // v4_loop_generator(257, 1, 1, igmp_snooping_pipeline(1), {first: 224, second: 0, third: 1})
+  v6_loop_generator(129, 1, 1, ipv6_mld_group_pipeline(1), {first: 65284, rear:1})
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
