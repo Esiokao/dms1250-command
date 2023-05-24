@@ -209,25 +209,28 @@ function macAddr_loop_generator(num, base, step, type, fn) {
   }
 }
 
-function v4_loop_generator(num, base, step, fn) {
+
+
+// -- generators --------
+function v4_loop_generator(num, base, step, fn, configs) {
   var ipv4
-  var first = 192
-  var second = 168
-  var third = 0
+  var first = configs.first  ? configs.first : 0
+  var second = configs.second ? configs.second : 0
+  var third = configs.third ? configs.third : 0
   var fourth = 0
   for (var i = base; i < base + num * step; i += step) {
-    third = Math.floor(i / 255)
-    fourth = i % 255
+    _third = Math.floor((i + (third * 256)) / 256)
+    _fourth = i % 256
     ipv4 =
       String(first) +
       '.' +
       String(second) +
       '.' +
-      String(third) +
+      String(_third) +
       '.' +
-      String(fourth)
+      String(_fourth)
 
-    fn(ipv4)
+    fn(ipv4, i)
   }
 }
 
@@ -252,6 +255,7 @@ function random_loop_generator(generator1, generator2) {
     }
   }
 }
+// -- generators --------
 
 function enter_arp_list(arpListName) {
   // auto create if it doesnt exist
@@ -306,7 +310,7 @@ function vlan(idStart, idEnd) {
   if (idEnd) {
     command = 'vlan ' + idStart + '-' + idEnd + '\n'
   } else {
-    command = 'vlan ' + idStart
+    command = 'vlan ' + idStart + '\n'
   }
   send(command)
 }
@@ -466,6 +470,14 @@ function fdb_static_unicast(macAddr, vlanID, interfaceID) {
   send(command)
 }
 
+
+
+// requried to enter vlan configuration mode first
+function igmp_snooping(groupAddr, interfaceID) { // interfaceID requried preprocess
+  var command = 'ip igmp snooping static-group ' + groupAddr + ' interface ' +  interfaceID +'\n'
+  send(command)
+}
+
 // -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
@@ -519,87 +531,15 @@ function main() {
   // initializer.http()
   initializer.https()
 
-  var accessListCache = []
-  var snmpGroupListCache = []
-  // random_loop_generator(v4_loop_generator, v6_loop_generator)(20, 1, tacacs_server, tacacs_server)
-
-  // for(var i = 1; i <= 10; i += 1) {
-  //   authentication(10, '')
-  // }
-
-  // v4_loop_generator(17, 1, 1, edit_arp_list(configs.arpList.action))
-
-  // for (var i = 0; i <= 10; i += 1) {
-
-  //   macAddr_loop_generator(1, 1, 1, dhcp_server_screen(randChar(32)))
-  //   exit()
-  // }
-
-  // loop(25, 1, 1, function (index) {
-  //   var accessListName = 'S' + index
-  //   ip_access_list_standard(accessListName)
-  //   accessListCache.push(accessListName)
-  //   exit()
-  // })
-  // loop(25, 26, 1, function (index) {
-  //   var accessListName = 'S' + index
-  //   ipv6_access_list_standard(accessListName)
-  //   accessListCache.push(accessListName)
-  //   exit()
-  // })
-
-  // loop(257, 1, 1, function(index){
-  //   authentication(index, index)
-  // })
-
-  // loop(46, 1, 1, function (index) {
-
-  //   var readName = genRand() === 1 ? randChar(5) : ''
-  //   var writeName = genRand() === 1 ? randChar(5) : ''
-  //   var notifyName = genRand() === 1 ? randChar(5) : ''
-  //   var groupName = 'snmpGroup' + index
-  //   var accessListName = 'S' + index
-  //   snmpv1_v2c_group_table(groupName, readName, writeName, notifyName, accessListName)
-  // })
-
-  // loop(51, 1, 1, function (index) {
-  //   var userName = 'user' + index
-  //   var groupName = 'snmpGroup' + ((index % 45) + 1 )
-  //   var accessListName = 'S' + index
-  //   snmp_user_table(userName, groupName, accessListName)
-  // })
-
-  // loop(257, 1, 1, function (index) {
-  //   var eventIndex = index
-  //   var eventDesc = randChar(127) // 1~127chars
-  //   rmon_event(eventIndex, eventDesc)
-  // })
-
-  // loop(257, 1, 1, function (index) {
-  //   rmon_alarm(index, 5, 'absolute', 5, index, 1, index)
-  // })
-
-
-  
-
-  var pipeLine1 = function pre() {
-    vlan(1, 300)
-    exit(3000)
-    return function (index) {
-      interface(index)
-      config_interface_untagged_vlan_member(1, 300)
-      exit(1000)
+  var igmp_snooping_pipeline  = function pre(vlanID) {
+    vlan(vlanID)
+    return function(groupAddr, index) {
+      var interfaceID = 'ethernet 1/0/' + ((index % 10)+1)
+      igmp_snooping(groupAddr, interfaceID)
     }
   }
 
-  loop(10, 1, 1, pipeLine1())
-
-  macAddr_loop_generator(129, 1, 1, 'multicast',function(macAddr, index) {
-    var vlanID = index
-    var interfaceID = 'ethernet 1/0/' + String((index % 10) + 1)
-    fdb_static_unicast(macAddr, vlanID, interfaceID)
-  })
-  
+  v4_loop_generator(257, 1, 1, igmp_snooping_pipeline(1), {first: 224, second: 0, third: 1})
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
