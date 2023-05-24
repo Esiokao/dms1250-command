@@ -193,9 +193,14 @@ function tacacs_server(ip) {
   send(command)
 }
 
-function macAddr_loop_generator(num, base, step, type, fn) {
+
+
+
+
+// -- generators --------
+function macAddr_loop_generator(num, base, step, fn, configs) {
   var prefix = '00-00-00-00'
-  if (type === 'multicast') prefix = '01-00-fe-05'
+  if (configs.type === 'multicast') prefix = '01-00-fe-05'
 
   for (var i = base; i < base + num * step; i += step) {
     eight = decToHex(i % 16)
@@ -209,12 +214,9 @@ function macAddr_loop_generator(num, base, step, type, fn) {
   }
 }
 
-
-
-// -- generators --------
 function v4_loop_generator(num, base, step, fn, configs) {
   var ipv4
-  var first = configs.first  ? configs.first : 0
+  var first = configs.first ? configs.first : 0
   var second = configs.second ? configs.second : 0
   var third = configs.third ? configs.third : 0
   var fourth = 0
@@ -242,7 +244,7 @@ function v6_loop_generator(num, base, step, fn, configs) {
     first = decToHex(first + i)
     ipv6 = String(first) + '::' + String(rear)
 
-    fn(ipv6 ,i)
+    fn(ipv6, i)
   }
 }
 
@@ -472,12 +474,17 @@ function fdb_static_unicast(macAddr, vlanID, interfaceID) {
 
 function ipv6_mld_group(ipv6Addr, interfaceID) {
   var command = 'ipv6 mld snooping static-group ' + ipv6Addr + ' interface ' + interfaceID + '\n'
-  send(command) 
+  send(command)
 }
 
 // requried to enter vlan configuration mode first
 function igmp_snooping(groupAddr, interfaceID) { // interfaceID requried preprocess
-  var command = 'ip igmp snooping static-group ' + groupAddr + ' interface ' +  interfaceID +'\n'
+  var command = 'ip igmp snooping static-group ' + groupAddr + ' interface ' + interfaceID + '\n'
+  send(command)
+}
+
+function arp_static(ipv4Addr, macAddr) {
+  var command = 'arp ' + ipv4Addr + ' ' + macAddr + '\n'
   send(command)
 }
 
@@ -540,16 +547,30 @@ function main() {
   //   }
   // }
 
-  var ipv6_mld_group_pipeline = function pre(vlanID) {
-    vlan(vlanID)
-    return function(groupAddr, index) {
-      var interfaceID = 'ethernet 1/0/' + ((index % 10)+1)
-      ipv6_mld_group(groupAddr, interfaceID)
-    }
+  // var ipv6_mld_group_pipeline = function pre(vlanID) {
+  //   vlan(vlanID)
+  //   return function (groupAddr, index) {
+  //     var interfaceID = 'ethernet 1/0/' + ((index % 10) + 1)
+  //     ipv6_mld_group(groupAddr, interfaceID)
+  //   }
+  // }
+
+  // // v4_loop_generator(257, 1, 1, igmp_snooping_pipeline(1), {first: 224, second: 0, third: 1})
+  // v6_loop_generator(129, 1, 1, ipv6_mld_group_pipeline(1), { first: 65284, rear: 1 })
+
+  function arp_static_pipeline(num, start, step) {
+    loop(num, start, step, function (index) {
+      var _index = index
+      v4_loop_generator(1, _index, 1, function (ipv4Addr, _index) {
+        macAddr_loop_generator(1, _index, 1, function (macAddr, _index) {
+          arp_static(ipv4Addr, macAddr)
+        }, {type: 'unicast'})
+      }, {first: 10, second: 90})
+    })
   }
 
-  // v4_loop_generator(257, 1, 1, igmp_snooping_pipeline(1), {first: 224, second: 0, third: 1})
-  v6_loop_generator(129, 1, 1, ipv6_mld_group_pipeline(1), {first: 65284, rear:1})
+  arp_static_pipeline(769, 1, 1)
+
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
