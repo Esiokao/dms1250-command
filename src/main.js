@@ -498,6 +498,12 @@ function ipv6_neighbor(ipv6Addr, vlanID, macAddr) {
   send(command)
 }
 
+function ipv6_static_route(networkPrefix, prefixLength, vlanID) {
+  var networkWithPrefix = networkPrefix + '/' + prefixLength
+  var command = 'ipv6 route ' +  networkWithPrefix + ' vlan ' + vlanID + ' FE80::1' + '\n'
+  send(command) 
+}
+
 // -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
@@ -599,19 +605,28 @@ function main() {
 
   // arp_staitc_route_pipeline(129, 1, 1)
 
-  function ipv6_neighbor_pipeline(num, start, step) {
-    loop(num, start, step, function (index) {
-      var _index = index
-      var vlanID = 'vlan1'
-      v6_loop_generator(1, _index, 1, function(ipv6Addr) {
-        macAddr_loop_generator(1, _index, 1, function(macAddr){
-          ipv6_neighbor(ipv6Addr, vlanID, macAddr)
-        }, {})
-      }, {head: 8192, rear: 1})
-    })
+  // function ipv6_neighbor_pipeline(num, start, step) {
+  //   loop(num, start, step, function (index) {
+  //     var _index = index
+  //     var vlanID = 'vlan1'
+  //     v6_loop_generator(1, _index, 1, function(ipv6Addr) {
+  //       macAddr_loop_generator(1, _index, 1, function(macAddr){
+  //         ipv6_neighbor(ipv6Addr, vlanID, macAddr)
+  //       }, {})
+  //     }, {head: 8192, rear: 1})
+  //   })
+  // }
+
+  // ipv6_neighbor_pipeline(129, 1, 1)
+
+  var ipv6_static_route_pipeline = function(prefixLength, vlanID){
+    v6_loop_generator(65, 1, 1, function(ipv6Addr, index){
+      ipv6_static_route(ipv6Addr, prefixLength, vlanID)
+    }, {head: 8192, rear: 1})
   }
 
-  ipv6_neighbor_pipeline(129, 1, 1)
+  ipv6_static_route_pipeline(64, 1)
+
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
