@@ -83,9 +83,14 @@ function ip_access_list_extended(name) {
   send(command)
 }
 
-function ip_access_list_standard(name) {
+function ip_access_list_standard(name, number) {
   // ip access-list NAME
-  var command = 'ip access-list' + ' ' + name + '\n'
+  var command 
+  if(number === undefined) {
+    command = 'ip access-list' + ' ' + name + '\n' 
+  } else {
+    command = 'ip access-list' + ' ' + name + ' ' + number + '\n'
+  }
   send(command)
 }
 
@@ -619,14 +624,23 @@ function main() {
 
   // ipv6_neighbor_pipeline(129, 1, 1)
 
-  var ipv6_static_route_pipeline = function(prefixLength, vlanID){
-    v6_loop_generator(65, 1, 1, function(ipv6Addr, index){
-      ipv6_static_route(ipv6Addr, prefixLength, vlanID)
-    }, {head: 8192, rear: 1})
+  // var ipv6_static_route_pipeline = function(prefixLength, vlanID){
+  //   v6_loop_generator(65, 1, 1, function(ipv6Addr, index){
+  //     ipv6_static_route(ipv6Addr, prefixLength, vlanID)
+  //   }, {head: 8192, rear: 1})
+  // }
+
+  // ipv6_static_route_pipeline(64, 1)
+
+  function pipe1 () {
+    loop(51, 1, 1, function(index){
+      var name = 'st' + index
+      ip_access_list_standard(name, index)
+      exit()
+    })
   }
 
-  ipv6_static_route_pipeline(64, 1)
-
+  pipe1()
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
