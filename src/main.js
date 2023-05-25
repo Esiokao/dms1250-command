@@ -509,6 +509,11 @@ function ipv6_static_route(networkPrefix, prefixLength, vlanID) {
   send(command) 
 }
 
+function voice_vlan(macAddr, desc) {
+  var command = 'voice vlan mac-address ' + macAddr + ' FF-FF-FF-00-00-00 description ' + desc +'\n'
+  send(command)
+}
+
 // -- utils start------------------
 function pipeLine(num, base, step) {
   return function () {
@@ -547,6 +552,7 @@ function genRand() {
 function randX(min, max, expectsArr) {
   var result = Math.floor(Math.random() * (max - min) + min)
   var exist = false
+  if(expectsArr === undefined) expectsArr = []
   for (var i = 0; i < expectsArr.length; i += 1) {
     if (expectsArr[i] === result) exist = true
   }
@@ -640,7 +646,21 @@ function main() {
     })
   }
 
-  pipe1()
+  // pipe1()
+
+  // FIXME: got unexecpted value in macAddr
+  function voice_vlan_pipe(){
+    return function(index) {
+      var one = decToHex(randX(1, 17)) + 4
+      var two = decToHex(randX(1, 17)) + decToHex(randX(1, 17))
+      var three = decToHex(randX(1, 17))+ decToHex(randX(1, 17))
+      var macAddr = one + '-' + two + '-' + three +'-00-00-00'
+      voice_vlan(macAddr, randChar(3))
+    }
+  }
+
+  loop(50, 1, 1, voice_vlan_pipe())
+
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
