@@ -85,9 +85,9 @@ function ip_access_list_extended(name) {
 
 function ip_access_list_standard(name, number) {
   // ip access-list NAME
-  var command 
-  if(number === undefined) {
-    command = 'ip access-list' + ' ' + name + '\n' 
+  var command
+  if (number === undefined) {
+    command = 'ip access-list' + ' ' + name + '\n'
   } else {
     command = 'ip access-list' + ' ' + name + ' ' + number + '\n'
   }
@@ -505,12 +505,12 @@ function ipv6_neighbor(ipv6Addr, vlanID, macAddr) {
 
 function ipv6_static_route(networkPrefix, prefixLength, vlanID) {
   var networkWithPrefix = networkPrefix + '/' + prefixLength
-  var command = 'ipv6 route ' +  networkWithPrefix + ' vlan ' + vlanID + ' FE80::1' + '\n'
-  send(command) 
+  var command = 'ipv6 route ' + networkWithPrefix + ' vlan ' + vlanID + ' FE80::1' + '\n'
+  send(command)
 }
 
 function voice_vlan(macAddr, desc) {
-  var command = 'voice vlan mac-address ' + macAddr + ' FF-FF-FF-00-00-00 description ' + desc +'\n'
+  var command = 'voice vlan mac-address ' + macAddr + ' FF-FF-FF-00-00-00 description ' + desc + '\n'
   send(command)
 }
 
@@ -552,7 +552,7 @@ function genRand() {
 function randX(min, max, expectsArr) {
   var result = Math.floor(Math.random() * (max - min) + min)
   var exist = false
-  if(expectsArr === undefined) expectsArr = []
+  if (expectsArr === undefined) expectsArr = []
   for (var i = 0; i < expectsArr.length; i += 1) {
     if (expectsArr[i] === result) exist = true
   }
@@ -563,8 +563,11 @@ function randX(min, max, expectsArr) {
 //-- entry point --------
 function main() {
   var initializer = new Initializer()
-  // initializer.http()
-  initializer.https()
+  initializer.http()
+  send('ip ssh server' + '\n')
+  send('ip ssh timeout 300' + '\n')
+  send('ip ssh authentication-retries 10' + '\n')
+  // initializer.https()
 
   // var igmp_snooping_pipeline  = function pre(vlanID) {
   //   vlan(vlanID)
@@ -638,8 +641,8 @@ function main() {
 
   // ipv6_static_route_pipeline(64, 1)
 
-  function pipe1 () {
-    loop(51, 1, 1, function(index){
+  function pipe1() {
+    loop(51, 1, 1, function (index) {
       var name = 'st' + index
       ip_access_list_standard(name, index)
       exit()
@@ -649,17 +652,17 @@ function main() {
   // pipe1()
 
   // FIXME: got unexecpted value in macAddr
-  function voice_vlan_pipe(){
-    return function(index) {
+  function voice_vlan_pipe() {
+    return function (index) {
       var one = decToHex(randX(1, 17)) + 4
       var two = decToHex(randX(1, 17)) + decToHex(randX(1, 17))
-      var three = decToHex(randX(1, 17))+ decToHex(randX(1, 17))
-      var macAddr = one + '-' + two + '-' + three +'-00-00-00'
+      var three = decToHex(randX(1, 17)) + decToHex(randX(1, 17))
+      var macAddr = one + '-' + two + '-' + three + '-00-00-00'
       voice_vlan(macAddr, randChar(3))
     }
   }
 
-  loop(50, 1, 1, voice_vlan_pipe())
+  // loop(50, 1, 1, voice_vlan_pipe())
 
 }
 
