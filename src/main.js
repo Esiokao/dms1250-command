@@ -563,11 +563,8 @@ function randX(min, max, expectsArr) {
 //-- entry point --------
 function main() {
   var initializer = new Initializer()
-  initializer.http()
-  send('ip ssh server' + '\n')
-  send('ip ssh timeout 300' + '\n')
-  send('ip ssh authentication-retries 10' + '\n')
-  // initializer.https()
+  // initializer.http()
+  initializer.https()
 
   // var igmp_snooping_pipeline  = function pre(vlanID) {
   //   vlan(vlanID)
@@ -664,6 +661,24 @@ function main() {
 
   // loop(50, 1, 1, voice_vlan_pipe())
 
+  function acl_pipe() {
+    var aclName = 'name1'
+
+    ip_access_list_standard(aclName)
+
+    v4_loop_generator(769, 1, 1, function(ipAddr, index) {
+
+      acl_ip_config(index, 'permit', 'host', ipAddr, 'any')
+
+    }, 
+    {
+      first: 0,
+      second: 0,
+      third: 0
+    })
+  }
+
+  acl_pipe()
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
