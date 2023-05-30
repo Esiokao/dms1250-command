@@ -678,7 +678,25 @@ function main() {
     })
   }
 
-  acl_pipe()
+  // acl_pipe()
+
+  function acl_ipv6_pipe() {
+    var aclName = 'name1'
+
+    ipv6_access_list_standard(aclName)
+
+    v6_loop_generator(385, 1, 1, function(ipv6Addr, index) {
+
+      acl_ipv6_config(index, 'permit', 'host', ipv6Addr, 'any')
+
+    }, 
+    {
+      head: 2000,
+      rear: 1
+    })
+  }
+
+  acl_ipv6_pipe()
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
