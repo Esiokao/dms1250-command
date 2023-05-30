@@ -38,7 +38,7 @@ var configs = {
 }
 
 function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
-  // rule 108 permit any any ethernet-type 70A 70A
+  // rule 108 permit macSrc any ethernet-type 70A 70A
   var command =
     'rule' +
     ' ' +
@@ -46,6 +46,7 @@ function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
     ' ' +
     act +
     ' ' +
+    'host ' +
     macSrc +
     ' ' +
     macDest +
@@ -62,6 +63,7 @@ function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
 function mac_access_list_extended(name, number) {
   // mac access-list extended NAME [NUMBER]
   var command = 'mac access-list extended' + ' ' + name + ' ' + number + '\n'
+  if (number === undefined) command = 'mac access-list extended' + ' ' + name + '\n'
   send(command)
 }
 
@@ -666,16 +668,16 @@ function main() {
 
     ip_access_list_standard(aclName)
 
-    v4_loop_generator(769, 1, 1, function(ipAddr, index) {
+    v4_loop_generator(769, 1, 1, function (ipAddr, index) {
 
       acl_ip_config(index, 'permit', 'host', ipAddr, 'any')
 
-    }, 
-    {
-      first: 0,
-      second: 0,
-      third: 0
-    })
+    },
+      {
+        first: 0,
+        second: 0,
+        third: 0
+      })
   }
 
   // acl_pipe()
@@ -685,18 +687,33 @@ function main() {
 
     ipv6_access_list_standard(aclName)
 
-    v6_loop_generator(385, 1, 1, function(ipv6Addr, index) {
+    v6_loop_generator(385, 1, 1, function (ipv6Addr, index) {
 
       acl_ipv6_config(index, 'permit', 'host', ipv6Addr, 'any')
 
-    }, 
-    {
-      head: 2000,
-      rear: 1
-    })
+    },
+      {
+        head: 2000,
+        rear: 1
+      })
   }
 
-  acl_ipv6_pipe()
+  // acl_ipv6_pipe()
+
+  function acl_mac_pipe() {
+    var aclName = 'name1'
+
+    mac_access_list_extended(aclName)
+
+    macAddr_loop_generator(769, 1, 1, function (macAddr, index) {
+
+      acl_mac_config(index, 'permit', macAddr, 'any',
+        '70A', '70A')
+
+    }, {})
+  }
+
+  acl_mac_pipe()
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
