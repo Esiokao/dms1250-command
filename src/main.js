@@ -38,7 +38,7 @@ var configs = {
 }
 
 function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
-  // rule 108 permit any any ethernet-type 70A 70A
+  // rule 108 permit macSrc any ethernet-type 70A 70A
   var command =
     'rule' +
     ' ' +
@@ -46,6 +46,7 @@ function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
     ' ' +
     act +
     ' ' +
+    'host ' +
     macSrc +
     ' ' +
     macDest +
@@ -62,6 +63,8 @@ function acl_mac_config(seqNum, act, macSrc, macDest, ethType, ethMask) {
 function mac_access_list_extended(name, number) {
   // mac access-list extended NAME [NUMBER]
   var command = 'mac access-list extended' + ' ' + name + ' ' + number + '\n'
+  if (number === undefined)
+    command = 'mac access-list extended' + ' ' + name + '\n'
   send(command)
 }
 
@@ -135,8 +138,6 @@ function exit(deferTime) {
   send(command, deferTime)
 }
 
-
-
 function port_security(macAddr, vlan) {
   var command =
     'switchport' +
@@ -198,10 +199,6 @@ function tacacs_server(ip) {
   send(command)
 }
 
-
-
-
-
 // -- generators --------
 function macAddr_loop_generator(num, base, step, fn, configs) {
   var prefix = '00-00-00-00'
@@ -226,7 +223,7 @@ function v4_loop_generator(num, base, step, fn, configs) {
   var third = configs.third ? configs.third : 0
   var fourth = 0
   for (var i = base; i < base + num * step; i += step) {
-    _third = Math.floor((i + (third * 256)) / 256)
+    _third = Math.floor((i + third * 256) / 256)
     _fourth = i % 256
     ipv4 =
       String(first) +
@@ -312,6 +309,8 @@ function dhcp_server_screen(profileName) {
   }
 }
 
+// create vlan if vlanID doesn't exist
+// then enter into the specified vlan configuration mode.
 function vlan(idStart, idEnd) {
   var command
   if (idEnd) {
@@ -333,9 +332,15 @@ function interface(interfaceID) {
 function config_interface_untagged_vlan_member(vlanIDStart, vlanIDEnd) {
   // switchport hybrid allowed vlan remove 1
   // switchport hybrid allowed vlan add untagged 1-2
-  var command = 'switchport hybrid allowed vlan add untagged ' + vlanIDStart + '\n'
+  var command =
+    'switchport hybrid allowed vlan add untagged ' + vlanIDStart + '\n'
   if (vlanIDEnd) {
-    command = 'switchport hybrid allowed vlan add untagged ' + vlanIDStart + '-' + vlanIDEnd + '\n'
+    command =
+      'switchport hybrid allowed vlan add untagged ' +
+      vlanIDStart +
+      '-' +
+      vlanIDEnd +
+      '\n'
   }
   send(command)
 }
@@ -473,18 +478,36 @@ function rmon_alarm(
 }
 
 function fdb_static_unicast(macAddr, vlanID, interfaceID) {
-  var command = 'mac-address-table static ' + macAddr + ' vlan ' + vlanID + ' interface ' + interfaceID + '\n'
+  var command =
+    'mac-address-table static ' +
+    macAddr +
+    ' vlan ' +
+    vlanID +
+    ' interface ' +
+    interfaceID +
+    '\n'
   send(command)
 }
 
 function ipv6_mld_group(ipv6Addr, interfaceID) {
-  var command = 'ipv6 mld snooping static-group ' + ipv6Addr + ' interface ' + interfaceID + '\n'
+  var command =
+    'ipv6 mld snooping static-group ' +
+    ipv6Addr +
+    ' interface ' +
+    interfaceID +
+    '\n'
   send(command)
 }
 
 // requried to enter vlan configuration mode first
-function igmp_snooping(groupAddr, interfaceID) { // interfaceID requried preprocess
-  var command = 'ip igmp snooping static-group ' + groupAddr + ' interface ' + interfaceID + '\n'
+function igmp_snooping(groupAddr, interfaceID) {
+  // interfaceID requried preprocess
+  var command =
+    'ip igmp snooping static-group ' +
+    groupAddr +
+    ' interface ' +
+    interfaceID +
+    '\n'
   send(command)
 }
 
@@ -499,19 +522,72 @@ function arp_staitc_route(networkAddr, mask, gateway) {
 }
 
 function ipv6_neighbor(ipv6Addr, vlanID, macAddr) {
-  var command = 'ipv6 neighbor ' + ipv6Addr + ' ' + vlanID + ' ' + macAddr + '\n'
+  var command =
+    'ipv6 neighbor ' + ipv6Addr + ' ' + vlanID + ' ' + macAddr + '\n'
   send(command)
 }
 
 function ipv6_static_route(networkPrefix, prefixLength, vlanID) {
   var networkWithPrefix = networkPrefix + '/' + prefixLength
-  var command = 'ipv6 route ' + networkWithPrefix + ' vlan ' + vlanID + ' FE80::1' + '\n'
+  var command =
+    'ipv6 route ' + networkWithPrefix + ' vlan ' + vlanID + ' FE80::1' + '\n'
   send(command)
 }
 
 function voice_vlan(macAddr, desc) {
-  var command = 'voice vlan mac-address ' + macAddr + ' FF-FF-FF-00-00-00 description ' + desc + '\n'
+  var command =
+    'voice vlan mac-address ' +
+    macAddr +
+    ' FF-FF-FF-00-00-00 description ' +
+    desc +
+    '\n'
   send(command)
+}
+
+function dhcp_snooping(state) {
+  // ip dhcp snooping
+  var command = 'ip dhcp snooping' + '\n'
+  if (state === 'disable') command = 'no ip dhcp snooping' + '\n'
+  send(command, 300)
+}
+
+function dhcp_snooping_trust(state) {
+  // ip dhcp snooping
+  var command = 'ip dhcp snooping trust' + '\n'
+  if (state === 'disable') command = 'no ip dhcp snooping trust' + '\n'
+  send(command, 300)
+}
+
+function dhcp_snooping_vlan(vlanID) {
+  // ip dhcp snooping vlan 1
+  var command = 'ip dhcp snooping vlan ' + vlanID + '\n'
+  send(command)
+}
+
+/** 
+  required: dhcp snooping vlan existed, global state is enabled, interface is untrust
+*/
+function dhcp_snooping_binging(
+  macAddr,
+  vlanID,
+  ipAddr,
+  interfaceID,
+  expirySeconds
+) {
+  // ip dhcp snooping binding MAC-ADDR vlan VLAN-ID IP-ADDRESS  interface {<INTERFACE-ID> | port-channel <1-8>} expiry SECONDS
+  var command =
+    'ip dhcp snooping binding ' +
+    macAddr +
+    ' vlan ' +
+    vlanID +
+    ' ' +
+    ipAddr +
+    ' interface ' +
+    interfaceID +
+    ' expiry ' +
+    expirySeconds +
+    '\n'
+  send(command, 300)
 }
 
 // -- utils start------------------
@@ -525,8 +601,6 @@ function pipeLine(num, base, step) {
     }
   }
 }
-
-
 
 function defer(fn) {
   return function () {
@@ -563,8 +637,8 @@ function randX(min, max, expectsArr) {
 //-- entry point --------
 function main() {
   var initializer = new Initializer()
-  // initializer.http()
-  initializer.https()
+  initializer.http()
+  // initializer.https()
 
   // var igmp_snooping_pipeline  = function pre(vlanID) {
   //   vlan(vlanID)
@@ -602,15 +676,27 @@ function main() {
     loop(num, start, step, function (index) {
       var _index = index
       var mask = '255.255.255.255'
-      v4_loop_generator(1, _index, 1, function (networkAddr, index) {
-        v4_loop_generator(1, _index, 1, function (gateway, index) {
-          arp_staitc_route(networkAddr, mask, gateway)
-        }, { first: 192, second: 168, third: 0 })
-      }, {
-        first: 10,
-        second: 90,
-        third: 90
-      })
+      v4_loop_generator(
+        1,
+        _index,
+        1,
+        function (networkAddr, index) {
+          v4_loop_generator(
+            1,
+            _index,
+            1,
+            function (gateway, index) {
+              arp_staitc_route(networkAddr, mask, gateway)
+            },
+            { first: 192, second: 168, third: 0 }
+          )
+        },
+        {
+          first: 10,
+          second: 90,
+          third: 90
+        }
+      )
     })
   }
 
@@ -666,16 +752,19 @@ function main() {
 
     ip_access_list_standard(aclName)
 
-    v4_loop_generator(769, 1, 1, function(ipAddr, index) {
-
-      acl_ip_config(index, 'permit', 'host', ipAddr, 'any')
-
-    }, 
-    {
-      first: 0,
-      second: 0,
-      third: 0
-    })
+    v4_loop_generator(
+      769,
+      1,
+      1,
+      function (ipAddr, index) {
+        acl_ip_config(index, 'permit', 'host', ipAddr, 'any')
+      },
+      {
+        first: 0,
+        second: 0,
+        third: 0
+      }
+    )
   }
 
   // acl_pipe()
@@ -685,18 +774,124 @@ function main() {
 
     ipv6_access_list_standard(aclName)
 
-    v6_loop_generator(385, 1, 1, function(ipv6Addr, index) {
-
-      acl_ipv6_config(index, 'permit', 'host', ipv6Addr, 'any')
-
-    }, 
-    {
-      head: 2000,
-      rear: 1
-    })
+    v6_loop_generator(
+      385,
+      1,
+      1,
+      function (ipv6Addr, index) {
+        acl_ipv6_config(index, 'permit', 'host', ipv6Addr, 'any')
+      },
+      {
+        head: 2000,
+        rear: 1
+      }
+    )
   }
 
-  acl_ipv6_pipe()
+  // acl_ipv6_pipe()
+
+  function acl_mac_pipe() {
+    var aclName = 'name1'
+
+    mac_access_list_extended(aclName)
+
+    macAddr_loop_generator(
+      769,
+      1,
+      1,
+      function (macAddr, index) {
+        acl_mac_config(index, 'permit', macAddr, 'any', '70A', '70A')
+      },
+      {}
+    )
+  }
+
+  // acl_mac_pipe()
+
+  // Important: replace variable WEB_CONNECTED_PORT with which port you're connecting to WebUI via it before you execute this function
+  function dhcp_snooping_binging_pipe(WEB_CONNECTED_PORT) {
+    // enable the dhcp snooping function
+    dhcp_snooping()
+
+    var macConfigs = {
+      type: 'unicast'
+    }
+    var v4LoopConfigs = {
+      first: 192,
+      second: 168,
+      third: 1
+    }
+
+    var ports = 10
+
+    var expirySeconds = '4294967295' // 60 - 4294967295
+
+    var interfaceNamePrefix = 'ethernet 1/0/'
+
+    // skip configure the port connecting with, in order to make the loop work properly.
+    var disableDhcpSnoopingSkipTimes = 0
+    var dhcpBindingSkipTimes = 0
+    // loop through all of the ports then disable remove 'em from dhcp snooping trusted ports.
+    loop(ports - 1, 0, 1, disableDhcpSnooping)
+    // table size on specs is defined as 512, thus loop with 513 times to reach the limit.
+    loop(513, 0, 1, pre)
+
+    function disableDhcpSnooping(index) {
+      var _index = index + disableDhcpSnoopingSkipTimes
+      if (((_index % ports) + 1) % WEB_CONNECTED_PORT === 0) {
+        disableDhcpSnoopingSkipTimes += 1
+        _index = index + disableDhcpSnoopingSkipTimes
+      }
+      interface((_index % ports) + 1)
+      dhcp_snooping_trust('disable')
+      exit()
+    }
+
+    function pre(index) {
+      var _index = index + dhcpBindingSkipTimes
+      if (((_index % ports) + 1) % WEB_CONNECTED_PORT === 0) {
+        dhcpBindingSkipTimes += 1
+        _index = index + dhcpBindingSkipTimes
+      }
+
+      var vlanID = (_index % ports) + 1
+      var interfaceName = interfaceNamePrefix + ((_index % ports) + 1)
+      // create vlan
+      vlan(vlanID)
+      // exit from vlan configuration mode
+      exit()
+      // add vlan to dhcp snooping list
+      dhcp_snooping_vlan(vlanID)
+
+      macAddr_loop_generator(
+        1,
+        _index + 1,
+        1,
+        function (macAddr) {
+          v4_loop_generator(
+            1,
+            _index + 1,
+            1,
+            function (ipv4Addr) {
+              // do dhcp snooping binding with closure variables
+              dhcp_snooping_binging(
+                macAddr,
+                vlanID,
+                ipv4Addr,
+                interfaceName,
+                expirySeconds
+              )
+            },
+            v4LoopConfigs
+          )
+        },
+        macConfigs
+      )
+    }
+  }
+  // Important: replace variable WEB_CONNECTED_PORT with which port you're connecting to WebUI via it before you execute this function
+  // 一定要把參數換成連接switch的port, 不然設成untrusted ports後一般的http request封包會被filter deny掉
+  dhcp_snooping_binging_pipe(8)
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
