@@ -13,6 +13,8 @@ eval(Include('utils/decToHex.js'))
 eval(Include('utils/randChar.js'))
 eval(Include('utils/randNum.js'))
 eval(Include('apis/Initializer.js'))
+eval(Include('modules/Snmp.js'))
+
 //-----------------------------------------------
 
 var endl = '\n'
@@ -345,82 +347,6 @@ function config_interface_untagged_vlan_member(vlanIDStart, vlanIDEnd) {
   send(command)
 }
 
-function snmpv1_v2c_group_table(
-  groupName,
-  readName,
-  writeName,
-  notifyName,
-  stdIPAcessListName
-) {
-  var version = ['v1', 'v2c']
-  var v = version[Math.round(Math.random())]
-  var readSyntax = readName === '' ? '' : ' read ' + readName
-  var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
-  var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
-
-  var command =
-    'snmp group ' +
-    groupName +
-    ' ' +
-    v +
-    ' ' +
-    readSyntax +
-    writeSyntax +
-    notifySyntax +
-    ' access ' +
-    stdIPAcessListName +
-    '\n'
-
-  send(command)
-}
-
-function snmpv3_group_table(
-  groupName,
-  readName,
-  writeName,
-  notifyName,
-  stdIPAcessListName
-) {
-  var version = 'v3'
-  var secLvlArr = ['auth', 'noauth', 'priv']
-  var secLvl = secLvlArr[randNum(1) % 3]
-  var readSyntax = readName === '' ? '' : ' read ' + readName
-  var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
-  var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
-
-  var command =
-    'snmp group ' +
-    groupName +
-    ' ' +
-    version +
-    ' ' +
-    secLvl +
-    ' ' +
-    readSyntax +
-    writeSyntax +
-    notifySyntax +
-    ' access ' +
-    stdIPAcessListName +
-    '\n'
-
-  send(command)
-}
-
-function snmp_user_table(userName, groupName, stdIPAcessListName) {
-  var version = 'v1'
-  var command =
-    'snmp user ' +
-    userName +
-    ' ' +
-    groupName +
-    ' ' +
-    version +
-    ' access ' +
-    stdIPAcessListName +
-    '\n'
-  send(command)
-}
-
 function rmon_event(evtIdx, evtDesc) {
   var command = 'rmon event ' + evtIdx + ' description ' + evtDesc + '\n'
   send(command)
@@ -595,7 +521,7 @@ function pipeLine(num, base, step) {
   return function () {
     for (var i = base; i < base + num * step; i += step) {
       for (var j = 0; j < arguments.length; j += 1) {
-        // only takes function as param
+        // only takes function as argv
         arguments[j]()
       }
     }
@@ -637,8 +563,13 @@ function randX(min, max, expectsArr) {
 //-- entry point --------
 function main() {
   var initializer = new Initializer()
-  initializer.http()
+  // initializer.http()
   // initializer.https()
+
+  var snmp = new Snmp()
+
+  // loop(50, 1, 1, snmp.add_snmp_view)
+  loop(10, 1, 1, defer(snmp.add_snmp_community))
 
   // var igmp_snooping_pipeline  = function pre(vlanID) {
   //   vlan(vlanID)
@@ -891,11 +822,11 @@ function main() {
   }
   // Important: replace variable WEB_CONNECTED_PORT with which port you're connecting to WebUI via it before you execute this function
   // 一定要把參數換成連接switch的port, 不然設成untrusted ports後一般的http request封包會被filter deny掉
-  dhcp_snooping_binging_pipe(8)
+  // dhcp_snooping_binging_pipe(8)
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.
-// NOTE: you may need to update your script engines and scripting runtime
+// NOTE: you may need to update your script engines and scripting runtime env
 // in order to successfully create the 'Scripting.FileSystemObject'.
 //
 function Include(file) {
