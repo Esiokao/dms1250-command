@@ -2,7 +2,6 @@ eval(Include('apis/send.js'))
 
 // singleton principle
 function Initializer() {
-  
   this.http = function () {
     clear_running_config()
     login()
@@ -21,7 +20,6 @@ function Initializer() {
     send('ip ssh timeout 300' + '\n')
     send('ip ssh authentication-retries 10' + '\n')
   }
-
 
   function enable_https_server() {
     send('conf t \n')
@@ -55,8 +53,6 @@ function Initializer() {
     var command = 'ip http time idle ' + timeout + '\n'
     send(command)
   }
-
-
 }
 
 // This subroutine must be pasted into any JScript that calls 'Include'.

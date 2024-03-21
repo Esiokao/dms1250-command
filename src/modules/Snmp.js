@@ -48,7 +48,9 @@ function Snmp() {
     send(command)
   }
 
-  this.add_v1_v2c_group_table = function (
+  // snmp-server group GROUP-NAME {v1 | v2c | v3 {auth | noauth | priv}} [read READ-VIEW] [write WRITE-VIEW] [notify NOTIFY-VIEW] [access IP-ACL-NAME]
+
+  this.add_snmp_v1_v2c_group_table = function (
     groupName,
     readName,
     writeName,
@@ -58,11 +60,13 @@ function Snmp() {
     var version = ['v1', 'v2c']
     var v = version[Math.round(Math.random())]
     var readSyntax = readName === '' ? '' : ' read ' + readName
-    var writeSyntax = writeName === '' ? '' : ' write ' + 'writeName'
+    var writeSyntax = writeName === '' ? '' : ' write ' + writeName
     var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
-
+    var stdIPAcessListSyntax = stdIPAcessListName
+      ? ''
+      : ' access ' + stdIPAcessListName
     var command =
-      'snmp group ' +
+      'snmp-server group ' +
       groupName +
       ' ' +
       v +
@@ -70,14 +74,12 @@ function Snmp() {
       readSyntax +
       writeSyntax +
       notifySyntax +
-      ' access ' +
-      stdIPAcessListName +
       '\n'
 
     send(command)
   }
 
-  this.add_snmpv3_group_table = function (
+  this.add_snmp_v3_group_table = function (
     groupName,
     readName,
     writeName,
@@ -92,7 +94,7 @@ function Snmp() {
     var notifySyntax = notifyName === '' ? '' : ' notify ' + notifyName
 
     var command =
-      'snmp group ' +
+      'snmp-server group ' +
       groupName +
       ' ' +
       version +
@@ -109,21 +111,25 @@ function Snmp() {
     send(command)
   }
 
+  // snmp-server user USER-NAME  GROUP-NAME {v1 | v2c | v3 [key auth {md5 | sha} AUTH-KEY  [priv PRIV-KEY]] [password auth {md5 | sha} AUTH-PASSWORD [priv PRIV-PASSWORD]]} [access IP-ACL-NAME]
+
   this.add_snmp_user_table = function (
     userName,
     groupName,
     stdIPAcessListName
   ) {
     var version = 'v1'
+    var stdIPAccessListSyntax =
+      stdIPAcessListName == undefined ? '' : ' access ' + stdIPAcessListName
+
     var command =
-      'snmp user ' +
+      'snmp-server user ' +
       userName +
       ' ' +
       groupName +
       ' ' +
       version +
-      ' access ' +
-      stdIPAcessListName +
+      stdIPAccessListSyntax +
       '\n'
     send(command)
   }

@@ -9,12 +9,16 @@
 // dynamic import api modules
 eval(Include('apis/send.js'))
 eval(Include('apis/sleep.js'))
+eval(Include('apis/switch/interface.js'))
+eval(Include('apis/switch/exit.js'))
 eval(Include('utils/decToHex.js'))
 eval(Include('utils/randChar.js'))
 eval(Include('utils/randNum.js'))
-eval(Include('apis/Initializer.js'))
+eval(Include('utils/randX.js'))
+eval(Include('utils/randInteger.js'))
+eval(Include('modules/Initializer.js'))
 eval(Include('modules/Snmp.js'))
-
+eval(Include('modules/Rmon.js'))
 //-----------------------------------------------
 
 var endl = '\n'
@@ -133,11 +137,6 @@ function acl_ip_config(seqNum, act, proto, srcIP, destIP) {
     destIP +
     '\n'
   send(command)
-}
-
-function exit(deferTime) {
-  var command = 'exit \n'
-  send(command, deferTime)
 }
 
 function port_security(macAddr, vlan) {
@@ -323,13 +322,6 @@ function vlan(idStart, idEnd) {
   send(command)
 }
 
-// will enter into the interface configuration mode after fire this func
-function interface(interfaceID) {
-  var interfaceName = 'ethernet 1/0/' + interfaceID
-  var command = 'interface ' + interfaceName + '\n'
-  send(command)
-}
-
 // required to entered interface configuration mode first
 function config_interface_untagged_vlan_member(vlanIDStart, vlanIDEnd) {
   // switchport hybrid allowed vlan remove 1
@@ -344,62 +336,6 @@ function config_interface_untagged_vlan_member(vlanIDStart, vlanIDEnd) {
       vlanIDEnd +
       '\n'
   }
-  send(command)
-}
-
-function rmon_event(evtIdx, evtDesc) {
-  var command = 'rmon event ' + evtIdx + ' description ' + evtDesc + '\n'
-  send(command)
-}
-
-function rmon_event_log_trap(evtIdx, evtDesc) {
-  var command =
-    'rmon event ' +
-    evtIdx +
-    ' log' +
-    ' trap 123' +
-    ' owner 123' +
-    ' description ' +
-    evtDesc +
-    '\n'
-  send(command)
-}
-
-function rmon_alarm(
-  alarmIdx,
-  intervel,
-  sampleType,
-  risingThresholdEvtVal,
-  risingThresholdEvtNum,
-  fallingThresholdVal,
-  fallingThresholdEvtNum
-) {
-  var x = 11
-  var y = 8
-  var variable = '1.3.6.1.2.1.2.2.1' + '.' + String(x) + '.' + String(y)
-  if (risingThresholdEvtVal < fallingThresholdVal) {
-    var tmp = risingThresholdEvtVal
-    risingThresholdEvtVal = fallingThresholdVal
-    fallingThresholdVal = tmp
-  }
-  var command =
-    'rmon alarm ' +
-    alarmIdx +
-    ' ' +
-    variable +
-    ' ' +
-    intervel +
-    ' ' +
-    sampleType +
-    ' rising-threshold ' +
-    risingThresholdEvtVal +
-    ' ' +
-    risingThresholdEvtNum +
-    ' falling-threshold ' +
-    fallingThresholdVal +
-    ' ' +
-    fallingThresholdEvtNum +
-    '\n'
   send(command)
 }
 
@@ -549,27 +485,43 @@ function genRand() {
   return Math.round(Math.random())
 }
 
-function randX(min, max, expectsArr) {
-  var result = Math.floor(Math.random() * (max - min) + min)
-  var exist = false
-  if (expectsArr === undefined) expectsArr = []
-  for (var i = 0; i < expectsArr.length; i += 1) {
-    if (expectsArr[i] === result) exist = true
-  }
-  if (exist) return randX(min, max, expects)
-  return result
-}
-
 //-- entry point --------
 function main() {
   var initializer = new Initializer()
-  // initializer.http()
+  initializer.http()
   // initializer.https()
 
-  var snmp = new Snmp()
-
+  // --snmp -----
+  // var snmp = new Snmp()
   // loop(50, 1, 1, snmp.add_snmp_view)
-  loop(10, 1, 1, defer(snmp.add_snmp_community))
+  // loop(10, 1, 1, defer(snmp.add_snmp_community))
+  // var snmpAddv1Pipe = function (index) {
+  //   snmp.add_snmp_v1_v2c_group_table(
+  //     randChar(32),
+  //     randChar(32),
+  //     randChar(32),
+  //     randChar(32)
+  //   )
+  // }
+  // loop(50, 1, 1, snmpAddv1Pipe)
+  // var snmpAddUserPipe = function (index) {
+  //   snmp.add_snmp_user_table(randChar(32), 'public')
+  // }
+
+  // loop(50, 1, 1, snmpAddUserPipe)
+
+  // --rmon -----
+  var rmon = new Rmon(10)
+  rmon.enable(true)
+
+  var addRmonStatPipe = function (index) {
+    index = index > rmon.totalPorts ? rmon.totalPorts : index
+    rmon.interface(index)
+    rmon.add_stat_settings(randInteger(1, 63335), randChar(127))
+    rmon.exit()
+  }
+
+  loop(11, 1, 1, addRmonStatPipe)
 
   // var igmp_snooping_pipeline  = function pre(vlanID) {
   //   vlan(vlanID)
