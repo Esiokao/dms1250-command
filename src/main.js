@@ -19,6 +19,7 @@ eval(Include('utils/randInteger.js'))
 eval(Include('modules/Initializer.js'))
 eval(Include('modules/Snmp.js'))
 eval(Include('modules/Rmon.js'))
+eval(Include('modules/Fdb.js'))
 //-----------------------------------------------
 
 var endl = '\n'
@@ -339,18 +340,6 @@ function config_interface_untagged_vlan_member(vlanIDStart, vlanIDEnd) {
   send(command)
 }
 
-function fdb_static_unicast(macAddr, vlanID, interfaceID) {
-  var command =
-    'mac-address-table static ' +
-    macAddr +
-    ' vlan ' +
-    vlanID +
-    ' interface ' +
-    interfaceID +
-    '\n'
-  send(command)
-}
-
 function ipv6_mld_group(ipv6Addr, interfaceID) {
   var command =
     'ipv6 mld snooping static-group ' +
@@ -488,8 +477,7 @@ function genRand() {
 //-- entry point --------
 function main() {
   var initializer = new Initializer()
-  initializer.http()
-  // initializer.https()
+  initializer.clear().login().http().init()
 
   // --snmp -----
   // var snmp = new Snmp()
@@ -517,12 +505,115 @@ function main() {
   var addRmonStatPipe = function (index) {
     index = index > rmon.totalPorts ? rmon.totalPorts : index
     rmon.interface(index)
-    rmon.add_stat_settings(randInteger(1, 63335), randChar(127))
+    rmon.add_stat(randInteger(1, 63335), randChar(127))
     rmon.exit()
   }
 
-  loop(11, 1, 1, addRmonStatPipe)
+  // loop(11, 1, 1, addRmonStatPipe)
+  function addHistory() {
+    var addHistoryPipe = function (index) {
+      index = index > rmon.totalPorts ? randInteger(1, rmon.totalPorts) : index
+      rmon.enterInterfaceThenExit(index, function () {
+        rmon.add_history(
+          randInteger(1, 63335),
+          randChar(127),
+          randInteger(1, 50),
+          randInteger(1, 3600)
+        )
+      })
+    }
 
+    loop(11, 1, 1, addHistoryPipe)
+  }
+
+  // addHistory()
+
+  function addEvent() {
+    var addEventPipe = function (index) {
+      index = index > rmon.totalPorts ? rmon.totalPorts : index
+      // possibly considered an issue, exit interface configuration mode after configured rmon event
+      // rmon.enterInterfaceThenExit(index, function () {
+      //   rmon.add_event_log_trap(index, randChar(127))
+      // })
+      rmon.interface(index)
+      rmon.add_event_log_trap(index, randChar(127))
+    }
+
+    loop(10, 1, 1, addEventPipe)
+  }
+
+  // addEvent()
+
+  function addAlarm() {
+    var addAlarmPipe = function (index) {
+      var alarmIndex = randInteger(1, 65535)
+      index = index > rmon.totalPorts ? randInteger(1, rmon.totalPorts) : index
+      rmon.add_rmon_alarm_table(
+        alarmIndex,
+        index,
+        'absolute',
+        20,
+        10,
+        index,
+        index
+      )
+    }
+    loop(5, 1, 1, addAlarmPipe)
+  }
+
+  // addAlarm()
+
+  // fdb
+  var fdb = new Fdb()
+  function addStaticFdb() {
+    macAddr_loop_generator(
+      200,
+      1,
+      1,
+      function (macAddr, idx) {
+        vlan(idx)
+        interface(1, 8)
+        config_interface_untagged_vlan_member(idx)
+        exit()
+        fdb.add_static_unicast(
+          macAddr,
+          idx,
+          'ethernet 1/0/' + randInteger(1, 8)
+        )
+      },
+      { type: 'unicast' }
+    )
+    macAddr_loop_generator(
+      200,
+      1,
+      1,
+      function (macAddr, idx) {
+        vlan(idx)
+        interface(1, 8)
+        config_interface_untagged_vlan_member(idx)
+        exit()
+        fdb.add_static_unicast(
+          macAddr,
+          idx,
+          'ethernet 1/0/' + randInteger(1, 8)
+        )
+      },
+      { type: 'multicast' }
+    )
+  }
+
+  // addStaticFdb()
+
+  function createVlan() {
+    loop(4093, 2, 1, function (idx) {
+      vlan(idx)
+      interface(1, 8)
+      config_interface_untagged_vlan_member(idx)
+      exit()
+    })
+  }
+
+  createVlan()
   // var igmp_snooping_pipeline  = function pre(vlanID) {
   //   vlan(vlanID)
   //   return function(groupAddr, index) {

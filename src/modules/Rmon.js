@@ -1,6 +1,7 @@
 eval(Include('apis/send.js'))
-// eval(Include('apis/switch/interface.js'))
-// eval(Include('apis/switch/exit.js'))
+eval(Include('utils/command.js'))
+eval(Include('apis/switch/interface.js'))
+eval(Include('apis/switch/exit.js'))
 
 function Rmon(ports) {
   // attrs
@@ -18,7 +19,7 @@ function Rmon(ports) {
   // Interface Configuration Mode
   // rmon collection stats INDEX [owner NAME]
   // each port can only bind with one specify index
-  this.add_stat_settings = function (index, ownerName) {
+  this.add_stat = function (index, ownerName) {
     var command
     var pre = 'rmon collection stats '
     if (!ownerName) command = pre + index + '\n'
@@ -28,28 +29,43 @@ function Rmon(ports) {
 
   // Interface Configuration Mode
   // no rmon collection stats INDEX
-  this.disable_stat = function (index) {
+  this.remove_stat = function (index) {
     var command = 'no rmon collection stats ' + index + '\n'
     send(command)
+  }
+
+  // Interface Configuration Mode
+  // rmon collection history INDEX [owner NAME] [buckets NUM] [interval SECONDS]
+  // each port can only bind with one specify index
+  this.add_history = function (index, ownerName, bucketsNum, intervalSec) {
+    var pre = 'rmon collection history ' + index
+    var ownerSyntax = ownerName == undefined ? '' : 'owner ' + ownerName
+    var bucketsSyntax = bucketsNum == undefined ? '' : 'buckets ' + bucketsNum
+    var intervalSyntax =
+      intervalSec == undefined ? '' : 'interval ' + intervalSec
+    var cmd = command([pre, ownerSyntax, bucketsSyntax, intervalSyntax])
+    send(cmd)
   }
 
   this.add_rmon_event = function (evtIdx, evtDesc) {
     var command = 'rmon event ' + evtIdx + ' description ' + evtDesc + '\n'
     send(command)
   }
+  // rmon event INDEX [log] [trap COMMUNITY] [owner NAME] [description TEXT]
 
-  this.rmon_event_log_trap = function (evtIdx, evtDesc) {
-    var command =
-      'rmon event ' +
-      evtIdx +
-      ' log' +
-      ' trap 123' +
-      ' owner 123' +
-      ' description ' +
-      evtDesc +
-      '\n'
-    send(command)
+  this.add_event_log_trap = function (evtIdx, evtDesc) {
+    var cmd = command([
+      'rmon event ',
+      evtIdx
+      // ' log',
+      // ' trap 123',
+      // 'owner 132',
+      // ' desc ' + evtDesc
+    ])
+    send(cmd)
   }
+
+  // "rmon alarm INDEX VARIABLE INTERVAL {delta | absolute} rising-threshold VALUE [RISING-EVENT-NUMBER] falling-threshold VALUE [FALLING-EVENT-NUMBER] [owner STRING]"
 
   this.add_rmon_alarm_table = function (
     alarmIdx,
@@ -89,6 +105,11 @@ function Rmon(ports) {
     send(command)
   }
 
+  this.enterInterfaceThenExit = function (interfaceID, cb) {
+    this.interface(interfaceID)
+    cb()
+    this.exit()
+  }
   this.interface = function (interfaceID) {
     interface(interfaceID)
   }

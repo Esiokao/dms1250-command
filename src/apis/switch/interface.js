@@ -1,9 +1,14 @@
 eval(Include('apis/send.js'))
 
 // will enter into the interface configuration mode after fire this func
-function interface(interfaceID) {
-  var interfaceName = 'ethernet 1/0/' + interfaceID
-  var command = 'interface ' + interfaceName + '\n'
+function interface(startInterface, endInterface) {
+  var interfaceID
+  // single interface
+  if (endInterface == undefined)
+    interfaceID = 'ethernet 1/0/' + startInterface
+  // multi interface
+  interfaceID = 'range ethernet 1/0/' + startInterface + '-' + endInterface
+  var command = 'interface ' + interfaceID + '\n'
   send(command)
 }
 
